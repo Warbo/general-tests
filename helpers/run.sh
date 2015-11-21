@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#! /usr/bin/env nix-shell
+#! nix-shell --show-trace -i bash
 
-[[ "$#" -eq 0 ]] && {
-    echo "Please give at least one test name" >> /dev/stderr
-    exit 1
+function run {
+    make -k -j2 "$@"
 }
 
 # Check that arguments refer to tests
@@ -30,5 +30,10 @@ do
     RESULTS+=( "$RESULT" )
 done
 
-# Run tests (i.e. try to make "pass" files for each)
-./run "${RESULTS[@]}"
+if [[ "$#" -eq 0 ]]
+then
+    echo "No tests given, running all" >> /dev/stderr
+    run all
+else
+    run "${RESULTS[@]}"
+fi

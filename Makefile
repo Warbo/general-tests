@@ -1,9 +1,3 @@
-#!/usr/bin/env nix-shell
-#! nix-shell --show-trace -i bash
-make -k -j2 -f <(tail -n+4 "$0") "$@"; exit "$?"
-
-# The shell trickery above means we can do ./run to execute this Makefile
-
 # All filenames from scripts/
 tests := $(notdir $(wildcard scripts/*))
 
