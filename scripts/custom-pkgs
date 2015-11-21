@@ -49,7 +49,7 @@ then
 else
     # Got a package, try to build it; "? src" ensures $PKG is actually a package
     if ! nix-shell --show-trace --run true \
-                   -p "if ($PKG) ? src then ($PKG) else bash"
+                   -p "if ($PKG) ? src then ($PKG) else if ($PKG) ? buildCommand then ($PKG) else bash"
     then
         echo "Couldn't invoke nix-shell for '$PKG'" >> /dev/stderr
         exit 1

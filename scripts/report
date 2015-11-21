@@ -25,7 +25,7 @@ do
         }
     done < <(grep -o "TODO{[^}]*}" < "$FILE")
 
-    if grep CITE < $FILE > /dev/null
+    if grep CITE < "$FILE" > /dev/null
     then
         NUM=$(grep -c CITE < "$FILE")
         echo "Found $NUM missing citations in $FILE" >> /dev/stderr
@@ -34,11 +34,17 @@ do
 
     for MACRO in qcheck qspec hspec
     do
-        if grep -v "newcommand" < "$FILE" | grep "\\${MACRO}[^{]" > /dev/null
-        then
-            echo "Put {} after \\$MACRO in $FILE"
-            ERR=1
-        fi
+        while read -r USAGE
+        do
+            SLASH=$(echo "$USAGE" | cut -c 1)
+            BRACE=$(echo "$USAGE" | rev | cut -c 1)
+            [[ "x$SLASH" = 'x\' ]] || continue
+            [[ "x$BRACE" = 'x{' ]] || {
+                echo "Put {} after \\$MACRO in $FILE"
+                ERR=1
+            }
+        done < <(grep -v "newcommand" < "$FILE" |
+                 grep -o ".${MACRO}.")
     done
 done
 
@@ -56,7 +62,7 @@ then
     ERR=1
     echo "Bibtex didn't run?" >> /dev/stderr
 else
-    WARNINGS=$(echo "$RENDER" | tail -n$BIBSTART | grep -ai "warning")
+    WARNINGS=$(echo "$RENDER" | tail "-n$BIBSTART" | grep -ai "warning")
 
     # Citations take two passes, so double-check
     CITES=$(echo "$WARNINGS" | grep 'Citation `'  | sed -e 's/.*`\(.*\)'"'.*/\1/g")
