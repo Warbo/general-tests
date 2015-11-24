@@ -39,8 +39,16 @@ do
     do
         while read -r REMOTE
         do
+            # Always push to origin and github; anything else is case-by-case.
+            # For example, we might have a read-only "upstream" for fetching,
+            # with pushes going via pull requests from "github"
+            [[ "x$REMOTE" = "xorigin" ]] ||
+            [[ "x$REMOTE" = "xgithub" ]] ||
+            continue
+
             UNPUSHED=$(git cherry "$BRANCH" "$REMOTE/$BRANCH" 2>&1) || {
                 echo "Untracked branches in '$REPO' '$REMOTE/$BRANCH'" >> /dev/stderr
+                echo "$UNPUSHED"
             }
             echo "$UNPUSHED" | grep "^+" > /dev/null && {
                 ERR=1

@@ -7,9 +7,9 @@ function data {
         then
             echo "$CBL"
         fi
-    done < <(locate "/home/chris/Programming/*.cabal" |
-             grep -v "/git-html/"                     |
-             grep -v "/ghc/"                          |
+    done < <(locate -e "/home/chris/Programming/*.cabal" |
+             grep -v "/git-html/"                        |
+             grep -v "/ghc/"                             |
              grep -v "/quickspec")
 }
 

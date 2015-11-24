@@ -5,7 +5,7 @@ function files {
     locate -e "/home/chris/*/config" |
         grep ".git"                  |
         grep -v "/git-html"          |
-        grep -v "/Backups/"
+        grep -v "/Backups/[^O]"
 }
 
 function cached {
