@@ -11,6 +11,8 @@ function cached {
     ./helpers/cache.sh "cabal-nixable" < <(data)
 }
 
+cached > /dev/null
+
 # Check how we were called
 if NAME=$(./helpers/getName.sh "$0")
 then
