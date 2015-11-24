@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function data {
-    locate -e "render.sh" | grep "/Writing/"
+    locate -e "/home/chris/Writing/*/render.sh"
 }
 
 function cached {
