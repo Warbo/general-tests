@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 echo "No name given, check names match up"
 PREFIX="$1"
+
+echo "Looking for '$PREFIX' tests"
+FOUND=""
+for TEST in scripts/"$PREFIX".*
+do
+    FOUND=$(echo "$FOUND"; echo "$TEST")
+done
+
+echo "Checking each cache line has a test"
 while read -r LINE
 do
     GOT=$(./helpers/mkName.sh "$LINE")
@@ -14,4 +23,14 @@ do
             touch "results/stdout/$FILE" &&
             touch "results/stderr/$FILE"
     } || exit 1
+
+    # Remove this file from $FOUND, if present
+    FOUND=$(echo "$FOUND" | grep -v "^scripts/${FILE}$")
 done
+
+[[ -z "$FOUND" ]] || {
+    echo "Found spurious tests:"                 >> /dev/stderr
+    echo "$FOUND" | grep -v '^$'                 >> /dev/stderr
+    echo "These don't correspond to cache lines" >> /dev/stderr
+    exit 1
+}
