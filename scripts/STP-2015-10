@@ -5,25 +5,5 @@ function fail {
     exit 1
 }
 
-function data {
-    locate -e ~/Writing/STP/*/render.sh
-}
-
-function cached {
-    ./helpers/cache.sh "STP-2015-10" < <(data)
-}
-
-# Check content exists
 [[ -e ~/Writing/STP/sites/stp/2015/10/index.md ]] || fail "2015/10 has no index"
 [[ -e ~/Writing/STP/talks/2015/10/slides.md ]]    || fail "2015/10 has no slides"
-
-cached > /dev/null
-
-# Render everything
-while read -r SCRIPT
-do
-    D=$(dirname "$SCRIPT")
-    pushd "$D" > /dev/null
-    ./render.sh || fail "Couldn't render with '$SCRIPT'"
-    popd > /dev/null
-done < <(cached)
