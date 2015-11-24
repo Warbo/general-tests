@@ -3,14 +3,17 @@
 cd /home/chris/Writing/TransferReport
 ERR=0
 
-ALL="" # Build up the whole TeX document
+TODOS=""
+REFS=""
+CITES=""
+MACROS=""
+LABELS=""
 for FILE in *.tex
 do
-    ALL=$(echo "$ALL"; cat "$FILE")
     if grep "TODO[^{]" < "$FILE" > /dev/null
     then
         NUM=$(grep -c TODO < "$FILE")
-        echo "Found $NUM undated TODOs in $FILE" >> /dev/stderr
+        TODOS=$(echo "$TODOS"; echo "Found $NUM undated TODOs in $FILE")
         ERR=1
     fi
 
@@ -21,14 +24,14 @@ do
         S=$(date --date="$D" +%s)
         [[ "$S" -gt "$NOW" ]] || {
             ERR=1
-            echo "Found TODO dated '$D' in '$FILE'" >> /dev/stderr
+            TODOS=$(echo "$TODOS"; echo "Found TODO dated '$D' in '$FILE'")
         }
     done < <(grep -o "TODO{[^}]*}" < "$FILE")
 
     if grep CITE < "$FILE" > /dev/null
     then
         NUM=$(grep -c CITE < "$FILE")
-        echo "Found $NUM missing citations in $FILE" >> /dev/stderr
+        CITES=$(echo "$CITES"; echo "Found $NUM missing citations in $FILE")
         ERR=1
     fi
 
@@ -40,13 +43,34 @@ do
             BRACE=$(echo "$USAGE" | rev | cut -c 1)
             [[ "x$SLASH" = 'x\' ]] || continue
             [[ "x$BRACE" = 'x{' ]] || {
-                echo "Put {} after \\$MACRO in $FILE"
+                MACROS=$(echo "$MACROS"; echo "Put {} after \\$MACRO in $FILE")
                 ERR=1
             }
         done < <(grep -v "newcommand" < "$FILE" |
                  grep -o ".${MACRO}.")
     done
+
+    # No uncategorised references
+    while read -r LABEL
+    do
+        LABELS=$(echo "$LABELS"; echo "Uncategorised label '$LABEL' in '$FILE'")
+        ERR=1
+    done < <(grep -o '\label{[^:}]*}' < "$FILE")
+
+    # No forward-references
+    [[ "x$FILE" = "xintro.tex" ]] || {
+        while read -r REF
+        do
+            REFS=$(echo "$REFS"; echo "File '$FILE' contains reference '$REF'")
+        done < <(grep -o '\ref{sec:[^}]*}' < "$FILE")
+    }
 done
+
+[[ -z "$TODOS"  ]] || echo "$TODOS"  >> /dev/stderr
+[[ -z "$REFS"   ]] || echo "$REFS"   >> /dev/stderr
+[[ -z "$CITES"  ]] || echo "$CITES"  >> /dev/stderr
+[[ -z "$MACROS" ]] || echo "$MACROS" >> /dev/stderr
+[[ -z "$LABELS" ]] || echo "$LABELS" >> /dev/stderr
 
 echo "Rendering report.tex" >> /dev/stderr
 RENDER=$(./render.sh 2>&1) || {
@@ -78,9 +102,9 @@ else
     # Check for non-citation warnings
     NONCIT=$(echo "$WARNINGS" | grep -v 'Citation `'                      |
                                 grep -v "There were undefined citations." |
-                                grep -v "Citation(s) may have changed.")
+                                grep -v "Citation(s) may have changed."   |
+                                grep -v "Rerun to get cross-references right.")
     [[ -z "$NONCIT" ]] || {
-        ERR=1
         echo "$NONCIT" >> /dev/stderr
         echo "There were warnings from the renderer" >> /dev/stderr
     }
@@ -92,7 +116,7 @@ then
     TOTAL=60
     REMAINING=$(( TOTAL - PAGES ))
     NOW=$(date +%s)
-    DEADLINE=$(date -d "2015-12-01" +%s)
+    DEADLINE=$(date -d "2015-12-17" +%s)
     DAYS=$(( (DEADLINE - NOW) / (60 * 60 * 24) ))
     SHOULD=$(( TOTAL - DAYS ))
     if [[ "$REMAINING" -gt "$DAYS" ]]
