@@ -2,4 +2,4 @@
 
 cd ~/Programming/Haskell/MLSpec
 hsConfig
-cabal test
+./test.sh
