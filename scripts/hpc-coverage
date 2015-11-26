@@ -2,6 +2,9 @@
 
 shopt -s nullglob
 
+# Coverage below this percentage will cause a failure
+MINIMUM=30
+
 function data {
     # When a test suite passes, it should store its coverage report here
     find ~/Programming/coverage -name "hpc_index.html"
@@ -23,13 +26,16 @@ then
     do
         TOTAL='th[contains(text(),"Program Coverage Total")]'
         PERCENT='following-sibling::td[1]/text()'
-        RESULT=$(xidel - --extract "//${TOTAL}/${PERCENT}" < "$LINE" | tr -d '%')
+        RAW=$(xidel - --extract "//${TOTAL}/${PERCENT}" < "$LINE")
+        RESULT=$(echo "$RAW" | tr -d '%')
+        echo "File '$LINE' has coverage '$RAW'"
         if echo "$RESULT" | grep "[^0-9]" > /dev/null
         then
             # 0 shows up as "-", so fix it
+            echo "Percentage looks non-numeric; assuming 0"
             RESULT=0
         fi
-        if [[ "$RESULT" -lt "30" ]]
+        if [[ "$RESULT" -lt "$MINIMUM" ]]
         then
             echo "'$RESULT' coverage for '$LINE'" >> /dev/stderr
             exit 1

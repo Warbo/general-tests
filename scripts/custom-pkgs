@@ -4,11 +4,57 @@ shopt -s nullglob
 function mktest {
     echo "Making test for '$1'"
     NAME="custom-pkg.$1"
-    pushd scripts                &&
+    pushd scripts > /dev/null    &&
     ln -s custom-pkgs "$NAME"    &&
-    popd                         &&
+    popd > /dev/null             &&
     touch "results/stderr/$NAME" &&
     touch "results/stdout/$NAME"
+}
+
+function packageNames {
+    BASE=~/.nixpkgs/custom
+    # "Local" is where we keep "regular" packages
+    for FILE in "$BASE"/local/*.nix
+    do
+        basename "$FILE" .nix
+    done
+
+    # "Imports" are usually special-cases
+    for FILE in "$BASE"/imports/*.nix
+    do
+        basename "$FILE" .nix
+    done
+
+    # Haskell packages need prefixing by the compiler version
+    for FILE in "$BASE"/haskell/*.nix
+    do
+        NAME=$(basename "$FILE" .nix)
+        for PREFIX in haskellPackages
+        do
+            echo "$PREFIX.$NAME"
+        done
+    done
+
+    # One offs (usually overrides)
+    echo get_iplayer
+}
+
+function mkExpr {
+    # Since Nix is lazy, knowing that an expression exists doesn't tell us much;
+    # we must try to build it, in order to expose problems.
+    # We face two difficulties: not everything is a package, and those which are
+    # need to be forced.
+
+    # Packages are just attribute sets, so inspecting the type doesn't help us.
+    # As a heuristic, if something contains a "src", it's probably a package
+    echo "if ($1) ? src then ($1)"
+
+    # If a package has no "src", it might be generated programatically by a
+    # "buildCommand"
+    echo "else if ($1) ? buildCommand then ($1)"
+
+    # If we've not been given a package, fall back to a safe default like bash
+    echo "else bash"
 }
 
 # Get the package to test from our invocation name
@@ -19,22 +65,20 @@ if [[ -z "$PKG" ]]
 then
     # No package given, make sure we have all of them
 
-    # All config.nix definitions should have a test
-    for FILE in ~/.nixpkgs/imports/*.nix ~/.nixpkgs/imports/local/*.nix
+    # All custom Nix expressions should have a test
+    while read -r PKG
     do
-        echo "Found '$FILE'"
-        PKG=$(basename "$FILE" .nix)
         echo "Checking we have a test for '$PKG'"
         [[ -e "scripts/custom-pkg.$PKG" ]] || {
             echo "'$PKG' doesn't have a test" >> /dev/stderr
             mktest "$PKG" || ERR=1
         }
-    done
+    done < <(packageNames)
 
-    # All tests must correspond to a package
+    # All tests must correspond to a Nix expression
     for SCRIPT in scripts/custom-pkg.*
     do
-        echo "Checking there is a package for '$SCRIPT'"
+        echo "Checking there is a Nix expression for '$SCRIPT'"
         PKG=$(basename "$SCRIPT" | cut -c 12-)
         FOUND=$(nix-instantiate  \
                     --show-trace \
@@ -47,11 +91,10 @@ then
     done
     exit "$ERR"
 else
-    # Got a package, try to build it; "? src" ensures $PKG is actually a package
-    if ! nix-shell --show-trace --run true \
-                   -p "if ($PKG) ? src then ($PKG) else if ($PKG) ? buildCommand then ($PKG) else bash"
-    then
+    # Got a package, try to build it
+    EXPR=$(mkExpr "$PKG")
+    nix-shell --show-trace --run true -p "$EXPR" || {
         echo "Couldn't invoke nix-shell for '$PKG'" >> /dev/stderr
         exit 1
-    fi
+    }
 fi
