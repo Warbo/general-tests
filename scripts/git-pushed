@@ -27,6 +27,8 @@ ERR=0
 
 while read -r REPO
 do
+    [[ -e "$REPO" ]] || { echo "Skipping non-existent '$REPO'"; continue; }
+
     # `git status` also lists unpushed commits but it doesn't work in bare repos
 
     pushd "$REPO" > /dev/null
