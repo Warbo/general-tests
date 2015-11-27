@@ -34,6 +34,7 @@ ERR=0
 while IFS= read -r REPO
 do
     DIR=$(dirname "$REPO")
+    [[ -e "$DIR" ]] || continue
     gitClean "$DIR"
 done < <(cached)
 
