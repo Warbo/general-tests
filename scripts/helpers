@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+nix-shell -p 'haskellPackages.ghcWithPackages (hs: [ hs.random ])' \
+          --run 'bash' <<'EOF'
+
 ERR=0
 
 function fail {
@@ -7,13 +10,17 @@ function fail {
     ERR=1
 }
 
+function choose {
+    ./helpers/choose.hs
+}
+
 FOOS=0
 BARS=0
 ITERATIONS=0
-while [[ $ITERATIONS -lt 10 ]]
+while [[ $ITERATIONS -lt 100 ]]
 do
     ITERATIONS=$(( ITERATIONS + 1 ))
-    OUT=$(echo -e "0:01.00 foo\n0:02.00 bar" | ./helpers/choose.hs)
+    OUT=$(echo -e "0:01.00 foo\n0:02.00 bar" | choose)
     if [[ "x$OUT" = "xfoo" ]]
     then
         FOOS=$(( FOOS + 1 ))
@@ -29,4 +36,28 @@ done
 
 [[ $FOOS -gt $BARS ]] || fail "'$FOOS' should be twice as big as '$BARS'"
 
+FOOS=0
+BARS=0
+ITERATIONS=0
+while [[ $ITERATIONS -lt 100 ]]
+do
+    ITERATIONS=$(( ITERATIONS + 1 ))
+    OUT=$(echo -e "45:00.00 foo\n0:01.00 bar" | choose)
+    if [[ "x$OUT" = "xfoo" ]]
+    then
+        FOOS=$(( FOOS + 1 ))
+    else
+        if [[ "x$OUT" = "xbar" ]]
+        then
+            BARS=$(( BARS + 1 ))
+        else
+            fail "Got '$OUT' instead of 'foo' or 'bar'"
+        fi
+    fi
+done
+
+[[ $BARS -gt $FOOS ]] || fail "'$BARS' should be much bigger than '$FOOS'"
+
 exit "$ERR"
+
+EOF
