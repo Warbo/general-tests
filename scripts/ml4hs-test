@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-cd ~/Programming/Haskell/ML4HS
+cd ~/Programming/ML4HS
 ./test.sh
