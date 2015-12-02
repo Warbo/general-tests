@@ -43,7 +43,7 @@ toHundredths x = let (m, rest) = split ':' x
                      mI = read m :: Int
                      mS = read s :: Int
                      mH = read h :: Int
-                  in 6000 * mI + 100 * mS + mH
+                  in (6000 * mI) + (100 * mS) + mH
 
 split c x = let (pre, post) = break (== c) x
              in (pre, tail post)
@@ -71,9 +71,10 @@ probs hs = map prob' hs
 select :: Float -> [(Float, a)] -> a
 select r = go 0
   where go _   [(_, x)]    = x
-        go acc ((p, x):xs) = if p + acc > r
-                                then x
-                                else go (p + acc) xs
+        go acc ((p, x):xs) = let acc' = p + acc
+                              in if acc' > r
+                                    then x
+                                    else go acc' xs
 
 {-
 FACTOR=$(( TOTAL /  ))

@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 
-# Select a test a random to re-try
+# Retry failing tests if we have any
+if failed_tests | grep "#FF0000" > /dev/null
+then
+    ./run
+else
+    ./helpers/times.sh | ./helpers/choose.hs
+fi
