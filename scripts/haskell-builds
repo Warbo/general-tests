@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+shopt -s nullglob
+
 function cached {
     ./helpers/cache.sh "haskell-builds" < <(my_haskell)
 }
 
 function cabalBuild {
+    hsConfig    || exit 1
     cabal build || exit 1
 }
 
