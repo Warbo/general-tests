@@ -73,13 +73,14 @@ done
 [[ -z "$LABELS" ]] || echo "$LABELS" >> /dev/stderr
 
 echo "Rendering report.tex" >> /dev/stderr
-RENDER=$(./render.sh 2>&1) || {
+touch *.tex
+RENDER=$(make 2>&1) || {
     echo "Couldn't render report.tex"
     ERR=1
 }
 
 echo "Checking output of renderer" >> /dev/stderr
-BIBSTART=$(echo "$RENDER" | grep -n "RUNNING bibtex" | head -n1 | cut -d ':' -f 1)
+BIBSTART=$(echo "$RENDER" | grep -an "RUNNING bibtex" | head -n1 | cut -d ':' -f 1)
 if [[ -z "$BIBSTART" ]]
 then
     echo "$RENDER"
