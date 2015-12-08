@@ -8,6 +8,7 @@ REFS=""
 CITES=""
 MACROS=""
 LABELS=""
+FIGS=""
 for FILE in *.tex
 do
     if grep "TODO[^{]" < "$FILE" > /dev/null
@@ -64,6 +65,13 @@ do
             REFS=$(echo "$REFS"; echo "File '$FILE' contains reference '$REF'")
         done < <(grep -o '\ref{sec:[^}]*}' < "$FILE")
     }
+
+    # "Figure 123" should be capitalised
+    while read -r FIG
+    do
+        FIGS=$(echo "$FIGS"; echo "Uncapitalised figure '$FIG' in '$FILE'")
+        ERR=1
+    done < <(grep -o 'figure .ref[^}]*' < "$FILE")
 done
 
 [[ -z "$TODOS"  ]] || echo "$TODOS"  >> /dev/stderr
@@ -71,6 +79,7 @@ done
 [[ -z "$CITES"  ]] || echo "$CITES"  >> /dev/stderr
 [[ -z "$MACROS" ]] || echo "$MACROS" >> /dev/stderr
 [[ -z "$LABELS" ]] || echo "$LABELS" >> /dev/stderr
+[[ -z "$FIGS"   ]] || echo "$FIGS"   >> /dev/stderr
 
 echo "Rendering report.tex" >> /dev/stderr
 touch *.tex
