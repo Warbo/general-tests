@@ -2,6 +2,7 @@
 
 import Data.List
 import System.IO
+import System.IO.Unsafe
 import System.Random (randomRIO)
 
 {-
@@ -28,13 +29,27 @@ main = do sin <- getContents
 
 choose :: String -> IO String
 choose sin = let hs = map asHundredths (filter (not . null) (lines sin))
-                 ps = probs hs
+                 ps = probs (skew hs)
               in do r <- randomRIO (0.0, 1.0)
                     return (select r ps)
 
+-- Bump up small numbers to 10% of the largest, to prevent super-fast tests
+-- being picked every time
+skew :: [(Int, a)] -> [(Int, a)]
+skew xs = let largest = maximum (map fst xs)
+              skew' (p, x) = (max p (largest `div` 10), x)
+           in map skew' xs
+
 asHundredths :: String -> (Int, String)
 asHundredths x = let (t, s) = split ' ' x
-                  in (toHundredths t, s)
+                     h      = toHundredths t
+                     h'     = if h == 0
+                                 then debug ("Forcing 0:00.01 for " ++ s ++ " since it has time " ++ show t)
+                                            1
+                                 else h
+                  in if h' > 0
+                        then (h', s)
+                        else error ("Time " ++ show t ++ " of script " ++ s ++ " gave hundredths " ++ show h')
 
 -- Turn minutes:seconds.hundredths into hundredths
 toHundredths :: String -> Int
@@ -62,18 +77,23 @@ $TOTAL (modulo rounding errors), which we can manipulate nicely with integers
 -}
 
 probs :: [(Int, a)] -> [(Float, a)]
-probs hs = map prob' hs
+probs hs = map (prob' j) hs
   where t = total hs
         j = sum (map (\(x, _) -> 1 / fromIntegral x) hs)
-        prob' (x, y) = let p = 1 / (fromIntegral x * j)
-                        in (p, y)
+
+prob' j (x, y) = let p = 1 / (fromIntegral x * j)
+                  in if p > 0 && p <= 1
+                        then (p, y)
+                        else error ("Time " ++ show x ++ " gave bad probability " ++ show p)
 
 select :: Float -> [(Float, a)] -> a
-select r = go 0
-  where go _   [(_, x)]    = x
+select r = debug ("Random choice is " ++ show r ++ " (should be in [0,1])")
+                 (go 0)
+  where go acc   [(_, x)]  = debug ("Run out of options, with acc=" ++ show acc)
+                                   x
         go acc ((p, x):xs) = let acc' = p + acc
-                              in if acc' > r
-                                    then x
+                              in if debug ("Probability " ++ show p ++ " brings our total to " ++ show acc') (acc' > r)
+                                    then debug "Choosing this option" x
                                     else go acc' xs
 
 {-
@@ -96,3 +116,6 @@ for(Apple *apple in array)
 
 echo "$TOTAL"
 -}
+
+-- Show `msg` on stderr and return `x` unchanged
+debug msg x = unsafePerformIO (hPutStrLn stderr msg >> return x)
