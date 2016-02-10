@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd ~/Programming/Haskell/AstPlugin
+./test.sh

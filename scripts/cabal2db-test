@@ -6,6 +6,10 @@ function fail() {
   exit 1
 }
 
+DIR=~/Programming/Cabal2DB
+cd "$DIR" || fail "Couldn't cd to '$DIR'"
+CABAL2DBCLEANUP=1 ./test.sh || fail "'$DIR/test.sh' failed"
+
 DUMP=$(dump-hackage list-extras) || fail "Couldn't dump list-extras"
 
 FOUND=$(echo "$DUMP" | jq 'length | . > 0') || fail "Couldn't get length of '$DUMP'"
