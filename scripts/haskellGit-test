@@ -28,11 +28,12 @@ echo "OK, we can use nix-eval to test haskellGit"
 
 echo "Checking if nix_git_rev_... is set inside nix-shell"
 OUTPUT=$(nix-shell --show-trace -p nix-eval --run \
-         'env | grep nix_git_rev' 2>&1)
-echo "$OUTPUT"
+         'env | grep nix_git_rev')
 
 echo "$OUTPUT" | grep "^nix_git_rev_" > /dev/null ||
-    fail "No nix_git_rev_... variables were set"
+    fail "No nix_git_rev_... variables were set: $OUTPUT"
+
+echo "Found nix_git_rev... in shell environment"
 
 echo "Running nested nix-shells"
 OUTPUT=$(nix-shell --show-trace -p nix-eval --run \
@@ -54,3 +55,5 @@ do
     done < <(join <(echo "$SEEN") <(echo "$ENTRY"))
     SEEN=$(echo "$SEEN"; echo "$ENTRY")
 done < <(echo "$OUTPUT" | grep "^building path.*repo-head")
+
+echo "Looks OK"

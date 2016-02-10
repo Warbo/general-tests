@@ -24,13 +24,13 @@ echo "OK, we can use warbo-utilities to test withLatestGit"
 
 echo "Checking if nix_git_rev_... is set inside nix-shell"
 OUTPUT=$(nix-shell --show-trace -p warbo-utilities --run \
-         'env | grep nix_git_rev' 2>&1)
-echo "$OUTPUT"
+         'env | grep nix_git_rev')
 
 echo "$OUTPUT" | grep "^nix_git_rev_" > /dev/null ||
-    fail "No nix_git_rev_... variables were set"
+    fail "No nix_git_rev_... variables were set: $OUTPUT"
 
-# Try using latestGit from within latestGit
+echo "Shell environment contained nix_git_rev_... variable"
+
 echo "Running nested nix-shells"
 OUTPUT=$(nix-shell --show-trace -p warbo-utilities --run \
         'nix-shell --show-trace -p warbo-utilities --run true' 2>&1)
@@ -51,3 +51,5 @@ do
     done < <(join <(echo "$SEEN") <(echo "$ENTRY"))
     SEEN=$(echo "$SEEN"; echo "$ENTRY")
 done < <(echo "$OUTPUT" | grep "^building path.*repo-head")
+
+echo "Looks OK"
