@@ -1,0 +1,13 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p cabal2db jq
+
+function fail() {
+  echo "$1" >> /dev/stderr
+  exit 1
+}
+
+DUMP=$(dump-hackage list-extras) || fail "Couldn't dump list-extras"
+
+FOUND=$(echo "$DUMP" | jq 'length | . > 0') || fail "Couldn't get length of '$DUMP'"
+
+[[ "x$FOUND" = "xtrue" ]] || fail "Result '$FOUND' isn't 'true'"

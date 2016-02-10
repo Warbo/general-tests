@@ -11,7 +11,9 @@ echo "Got Markdown '$MARKDOWN'"
 JSON=$(echo "$MARKDOWN" | nix-shell -p pandoc --run "pandoc -f markdown -t json")
 echo "Got JSON '$JSON'"
 
-UNWRAP=$(echo '```{.unwrap}'; echo "$JSON"; echo '```')
+TICK='`'
+TICKS="${TICK}${TICK}${TICK}"
+UNWRAP=$(echo "$TICKS"; echo '{.unwrap}'; echo "$JSON"; echo "$TICKS")
 echo "Got unwrap '$UNWRAP'"
 
 HTML=$(echo "$UNWRAP" | nix-shell -p pandoc -p panhandle --run \

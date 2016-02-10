@@ -33,7 +33,7 @@ then
     LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || ERR=1
     while read -r DIR
     do
-        cd "$DIR"
+        cd "$DIR" || { echo "Couldn't cd to '$DIR'" >> /dev/stderr; exit 1; }
         if test -n "$(find . -maxdepth 1 -type f -name '*.cabal' -print -quit)"
         then
             echo "Found Cabal file in '$DIR', trying to configure and build project"

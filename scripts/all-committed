@@ -21,7 +21,6 @@ function cached {
 }
 
 function gitClean {
-    cd "$1"
     if ! git status | grep "nothing to commit, working directory clean" > /dev/null
     then
         ERR=1
@@ -35,6 +34,7 @@ while IFS= read -r REPO
 do
     DIR=$(dirname "$REPO")
     [[ -e "$DIR" ]] || continue
+    cd "$DIR" || { ERR=1; continue; }
     gitClean "$DIR"
 done < <(cached)
 

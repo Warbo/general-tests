@@ -29,10 +29,7 @@ function packageNames {
     for FILE in "$BASE"/haskell/*.nix
     do
         NAME=$(basename "$FILE" .nix)
-        for PREFIX in haskellPackages
-        do
-            echo "$PREFIX.$NAME"
-        done
+        echo "haskellPackages.$NAME"
     done
 
     # One offs (usually overrides)

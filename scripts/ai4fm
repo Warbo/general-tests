@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd ~/Writing/AI4FM
+cd ~/Writing/AI4FM || exit 1
 
 for F in article.tex slides.md
 do

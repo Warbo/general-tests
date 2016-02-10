@@ -80,6 +80,10 @@ cached > /dev/null
 ERR=0
 while read -r script
 do
+    [[ -e "$script" ]] || {
+        echo "Skipping non-existent '$script'"
+        continue
+    }
     echo "Checking '$script'"
     shellcheck -e SC1008 -e SC2001 -e SC2029 "$script" || {
         ERR=1

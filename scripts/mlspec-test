@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-cd ~/Programming/Haskell/MLSpec
+cd ~/Programming/Haskell/MLSpec || exit 1
 hsConfig
 ./test.sh
