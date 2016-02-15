@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# nix-eval's test suite is empty if nix-shell isn't available, which is the case
+# during installation. Hence to make sure the tests are running, we run them
+# from the source directory
+
+function fail {
+    echo "FAIL: $1" >> /dev/stderr
+    exit 1
+}
+
+DIR=~/Programming/Haskell/nix-eval
+pushd "$DIR" > /dev/null ||
+    fail "Couldn't pushd '$DIR'"
+
+cabal test --show-details=streaming ||
+    fail "'cabal test' failed in '$DIR'"
+
+popd > /dev/null
+
+# We also clone the source and test that too, in case our copy is
+# unrepresentative
+DIR=$(mktemp -d -t 'nix-eval-test-XXXXX')
+pushd "$DIR" > /dev/null ||
+    fail "Couldn't pushd temp dir '$DIR'"
+echo "Made temp directory '$DIR'" >> /dev/stderr
+
+git clone http://chriswarbo.net/git/nix-eval.git nix-eval ||
+    fail "Couldn't clone nix-eval"
+
+pushd nix-eval > /dev/null ||
+    fail "Couldn't pushd into nix-eval"
+
+hsConfig || fail "Couldn't hsConfig nix-eval"
+
+cabal test --show-details=streaming ||
+    fail "'cabal test' failed in clone '$DIR'"
+
+popd > /dev/null
+popd > /dev/null
+
+rm -rf "$DIR"
