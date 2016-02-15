@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Test that we can use an installed nix-eval, i.e. from outside its source
+# directory
+
+function fail {
+    echo "FAIL: $1" >> /dev/stderr
+    exit 1
+}
+
+function prog {
+    cat <<'EOF'
+import Language.Eval
+import Data.Maybe
+main = do x <- eval (raw "show" $$ raw "True")
+          if isJust x then return () else error "Failed"
+EOF
+}
+
+prog | nix-shell -p 'haskellPackages.ghcWithPackages (h: [ h.nix-eval ])' \
+                 --run runhaskell ||
+    fail "Failed to use nix-eval"
