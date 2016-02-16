@@ -58,11 +58,19 @@ function testMLSpec {
     JSON=$(echo "$RESULT" | grep -v "^Depth")
     ALL_LINES=$(echo "$JSON" | wc -l)
     JSON_LINES=$(echo "$JSON" | grep "^{" | wc -l)
-    [[ "$ALL_LINES" -eq "$JSON_LINES" ]] || {
+
+    [[ "$ALL_LINES" -eq "$JSON_LINES" ]] ||
         fail "Only '$JSON_LINES'/'$ALL_LINES' look like JSON:\n$RESULT"
-    }
+
     echo "testMLSpec passed" >> /dev/stderr
 }
 
-#testNixEval
+echo "Running tests with debug"
+
+NIX_EVAL_DEBUG=1 testNixEval
+NIX_EVAL_DEBUG=1 testMLSpec
+
+echo "Running tests without debug"
+
+testNixEval
 testMLSpec
