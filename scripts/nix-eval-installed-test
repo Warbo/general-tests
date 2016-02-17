@@ -13,10 +13,18 @@ function prog {
 import Language.Eval
 import Data.Maybe
 main = do x <- eval (raw "show" $$ raw "True")
-          if isJust x then return () else error "Failed"
+          case x of
+               Just y  -> putStr y
+               Nothing -> error "Failed"
 EOF
 }
 
-prog | nix-shell -p 'haskellPackages.ghcWithPackages (h: [ h.nix-eval ])' \
-                 --run runhaskell ||
-    fail "Failed to use nix-eval"
+function runProg {
+    prog | nix-shell -p 'haskellPackages.ghcWithPackages (h: [ h.nix-eval ])' \
+                     --run runhaskell ||
+        fail "Failed to use nix-eval"
+}
+
+OUTPUT=$(runProg)
+
+[[ "x$OUTPUT" = "xTrue" ]] || fail "Wrong output '$OUTPUT'"
