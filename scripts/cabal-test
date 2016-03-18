@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+function skip {
+    grep -v "/git-html/"                        |
+    grep -v "/ghc/"                             |
+    grep -v "/quickspec"                        |
+    grep -v "/unification"                      |
+    grep -v "/structural-induction"
+}
+
 function data {
     while read -r CBL
     do
@@ -7,10 +15,7 @@ function data {
         then
             echo "$CBL"
         fi
-    done < <(locate -e "/home/chris/Programming/*.cabal" |
-             grep -v "/git-html/"                        |
-             grep -v "/ghc/"                             |
-             grep -v "/quickspec")
+    done < <(locate -e "/home/chris/Programming/*.cabal" | skip)
 }
 
 function cached {

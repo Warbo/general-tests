@@ -57,7 +57,7 @@ function testMLSpec {
     RESULT=$(tryMLSpec)
     JSON=$(echo "$RESULT" | grep -v "^Depth")
     ALL_LINES=$(echo "$JSON" | wc -l)
-    JSON_LINES=$(echo "$JSON" | grep "^{" | wc -l)
+    JSON_LINES=$(echo "$JSON" | grep -c "^{")
 
     [[ "$ALL_LINES" -eq "$JSON_LINES" ]] ||
         fail "Only '$JSON_LINES'/'$ALL_LINES' look like JSON:\n$RESULT"

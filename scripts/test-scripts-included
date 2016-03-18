@@ -17,14 +17,22 @@ function cached {
 }
 
 function skip {
+    # Ignore anything in the Nix store
     grep -v "/nix/store/"                          |
+    # Ignore anything in Backups, since it's unmaintained
     grep -v "/Backups/"                            |
+    # Ignore the git clones made by git2html
     grep -v "/git-html/"                           |
+    # Specific tests which aren't under our control
     grep -v "/ATS/aos/compiler/test.sh"            |
     grep -v "/Epigram/Pig09/test/test.sh"          |
-    grep -v "/home/chris/Programming/Haskell/ghc/" |
+    grep -v "/yaxx-read-only/"                     |
     grep -v "/nixpkgs/pkgs/"                       |
-    grep -v "/yaxx-read-only/"
+    grep -v "/home/chris/Programming/Haskell/ghc/" |
+    # Ignore any code being cached by static analysis tools
+    grep -v "/home/chris/.cache"                   |
+    # Ignore the git submodules of haskell-te
+    grep -v "/haskell-te/packages/"
 }
 
 echo "Filling cache"

@@ -17,7 +17,7 @@ function buildFiles {
     for HS in *.hs *.lhs
     do
         echo "Type-checking '$HS'"
-        if ! ghc "$HS" -e 'return ()'
+        if ! nix-shell -p haskellPackages.ghc --run "ghc '$HS' -e 'return ()'"
         then
             ERR=1
         fi

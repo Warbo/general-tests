@@ -15,7 +15,7 @@ cd "$DIR" || fail "Couldn't cd to '$DIR'"
 for FILE in test-data/*format*
 do
     NAME=$(basename "$FILE")
-    OTHER=~/Programming/ML4HS/test-data/"$FILE"
+    OTHER=~/Programming/ML4HS/test-data/"$NAME"
     if [[ -f "$OTHER" ]]
     then
         cmp --silent "$FILE" "$OTHER" ||

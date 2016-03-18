@@ -44,7 +44,7 @@ echo "Making sure we only checked git repos at most once"
 SEEN=""
 while read -r LINE
 do
-    URL=$(echo "$LINE" | sed -e 's/.*repo-head-//g' | grep -o '[^’]*')
+    URL=$(echo "$LINE" | sed -e 's/.*repo-head-//g' | grep -o '[a-z0-9]*')
     STAMP=$(echo "$LINE" | sed -e 's@.*store/@@g' | sed -e 's@-repo-head-.*@@g')
     ENTRY=$(echo -e "$URL\t$STAMP")
     while read -r STAMPS

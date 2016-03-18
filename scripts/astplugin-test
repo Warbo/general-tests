@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
-cd ~/Programming/Haskell/AstPlugin
+
+function fail {
+    echo "FAIL: $1" >> /dev/stderr
+    exit 1
+}
+
+DIR=~/Programming/Haskell/AstPlugin
+cd "$DIR" || fail "Couldn't cd to '$DIR'"
 ./test.sh
