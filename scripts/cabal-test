@@ -5,7 +5,9 @@ function skip {
     grep -v "/ghc/"                             |
     grep -v "/quickspec"                        |
     grep -v "/unification"                      |
-    grep -v "/structural-induction"
+    grep -v "/structural-induction"             |
+    grep -v "haskell-te/cache/"                 |
+    grep -v "haskell-te/packages"
 }
 
 function data {

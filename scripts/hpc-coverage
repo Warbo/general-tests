@@ -5,13 +5,17 @@ shopt -s nullglob
 # Coverage below this percentage will cause a failure
 MINIMUM=30
 
+function skip {
+    cat
+}
+
 function data {
     # When a test suite passes, it should store its coverage report here
-    find ~/Programming/coverage -name "hpc_index.html"
+    find ~/Programming/coverage -name "hpc_index.html" | skip
 }
 
 function cached {
-    ./helpers/cache.sh "hpc-coverage" < <(data)
+    ./helpers/cache.sh "hpc-coverage" < <(data) | skip
 }
 
 # Prime the cache

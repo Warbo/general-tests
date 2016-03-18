@@ -17,7 +17,9 @@ function hs {
 }
 
 function skip {
-    grep -v "/Haskell/quickcheck$"
+    grep -v "/Haskell/quickcheck$" |
+    grep -v "/Haskell/imm$"        |
+    grep -v "/Haskell/ifcxt$"
 }
 
 function data {
