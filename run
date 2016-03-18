@@ -13,12 +13,13 @@ do
     # a file, and hence we get tab-completion for free
     NAME=$(basename "$ARG")
 
-    [[ -e "scripts/$NAME" ]] || {
-        echo "Could not find 'scripts/$NAME'" >> /dev/stderr
-        exit 1
-    }
-
-    NAMES+=( "$NAME" )
+    if [[ -e "scripts/$NAME" ]]
+    then
+        NAMES+=( "$NAME" )
+    else
+        echo "Could not find 'scripts/$NAME', using '$ARG'" >> /dev/stderr
+        NAMES+=( "$ARG" )
+    fi
 done
 
 # Force re-execution of tests by deleting previous "pass" files, if any
