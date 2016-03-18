@@ -13,7 +13,7 @@ echo "Got JSON '$JSON'"
 
 TICK='`'
 TICKS="${TICK}${TICK}${TICK}"
-UNWRAP=$(echo "$TICKS"; echo '{.unwrap}'; echo "$JSON"; echo "$TICKS")
+UNWRAP=$(printf '%s{.unwrap}\n%s\n%s' "$TICKS" "$JSON" "$TICKS")
 echo "Got unwrap '$UNWRAP'"
 
 HTML=$(echo "$UNWRAP" | nix-shell -p pandoc -p panhandle --run \
