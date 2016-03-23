@@ -11,71 +11,8 @@ function msg {
     echo "$1" >> /dev/stderr
 }
 
-function ext {
-    echo "$1" | rev | cut -d '.' -f 1 | rev | tr '[:upper:]' '[:lower:]'
-}
-
-function keep {
-    # Skip obvious Python, Haskell, etc.
-    EXT=$(ext "$1")
-    for NOPE in py hs lhs nix rb pl
-    do
-        [[ "x$EXT" = "x$NOPE" ]] && return 1
-    done
-
-    # Skip missing files
-    [[ -f "$1" ]] || return 1
-
-    if [[ "x$EXT" = "xsh" ]]
-    then
-        # Keep .sh
-        true
-    else
-        # Skip non-shebang
-        SHEBANG=$(grep '^#!' < "$1") || return 1
-
-        # Skip binary files
-        echo "$SHEBANG" | grep "^Binary file" > /dev/null && return 1
-
-        # Skip only-uppercase (LICENSE, README, etc.)
-        BASE=$(basename "$1")
-        echo "$BASE" | grep -- "[a-z]" || return 1
-
-        # Skip hidden files
-        FIRST=$(echo "$BASE" | cut -c 1)
-        [[ "x$FIRST" = "x." ]] && return 1
-
-        # Skip non-bash interpreters
-        CONTENT=$(grep "^#!" < "$1")
-        for NOPE in python haskell make
-        do
-            # /usr/bin/env lines
-            echo "$CONTENT" | grep -- "/usr/bin.*$NOPE" && return 1
-            # nix-shell interpreters
-            echo "$CONTENT" | grep -- "-i $NOPE"  && return 1
-        done
-    fi
-}
-
-function getAll {
-    for D in System/Tests warbo-utilities Programming
-    do
-        locate "$HOME/$D/*" | grep -v '/\.git'
-    done
-}
-
 function data {
-    while read -r LINE
-    do
-        ABS=$(readlink -f "$LINE")
-        if keep "$ABS"
-        then
-            echo "Keeping '$ABS'" >> /dev/stderr
-            echo "$ABS"
-        else
-            echo "Skipping '$ABS'" >> /dev/stderr
-        fi
-    done < <(getAll)
+    my_shellscripts
 }
 
 function rawCached {
@@ -83,13 +20,10 @@ function rawCached {
 }
 
 function cached {
-    # Our skippable criteria might have tightened since we last cached
+    # Some files may have disappeared since we last cached
     while read -r LINE
     do
-        if keep "$LINE"
-        then
-            echo "$LINE"
-        fi
+        [[ -f "$LINE" ]] && echo "$LINE"
     done < <(rawCached)
 }
 
@@ -98,10 +32,6 @@ cached > /dev/null
 ERR=0
 while read -r script
 do
-    [[ -e "$script" ]] || {
-        echo "Skipping non-existent '$script'"
-        continue
-    }
     echo "Checking '$script'"
     shellcheck -e SC1008 -e SC2001 -e SC2029 "$script" || {
         ERR=1
