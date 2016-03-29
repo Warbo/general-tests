@@ -1,17 +1,32 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p cabal2db jq
 
+function msg {
+    echo -e "$1" 1>&2
+}
+
 function fail() {
-  echo "$1" >> /dev/stderr
+  msg "FAIL: $1"
   exit 1
 }
 
 DIR=~/Programming/Cabal2DB
 cd "$DIR" || fail "Couldn't cd to '$DIR'"
+
+msg "Running '$PWD/test.sh'"
 CABAL2DBCLEANUP=1 ./test.sh || fail "'$DIR/test.sh' failed"
 
+msg "Running 'dump-hackage list-extras'"
 DUMP=$(dump-hackage list-extras) || fail "Couldn't dump list-extras"
 
-FOUND=$(echo "$DUMP" | jq 'length | . > 0') || fail "Couldn't get length of '$DUMP'"
+msg "Ensuring we got some ASTs"
+FOUND=$(echo "$DUMP" | jq 'length | . > 0') ||
+    fail "Couldn't get length of '$DUMP'"
 
 [[ "x$FOUND" = "xtrue" ]] || fail "Result '$FOUND' isn't 'true'"
+
+msg "Running 'nix-shell -p cabal2db'"
+OUTPUT=$(nix-shell -p cabal2db --run true 2>&1) ||
+    fail "Couldn't get shell with cabal2db"
+
+msg "Finished"

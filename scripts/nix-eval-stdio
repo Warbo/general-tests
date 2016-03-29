@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function fail {
-    echo "FAIL: $1" >> /dev/stderr
+    echo -e "FAIL: $1" >> /dev/stderr
     exit 1
 }
 
@@ -60,7 +60,7 @@ function testMLSpec {
     JSON_LINES=$(echo "$JSON" | grep -c "^{")
 
     [[ "$ALL_LINES" -eq "$JSON_LINES" ]] ||
-        fail "Only '$JSON_LINES'/'$ALL_LINES' look like JSON:\n$RESULT"
+        fail "Only $JSON_LINES/$ALL_LINES look like JSON:\n$RESULT"
 
     echo "testMLSpec passed" >> /dev/stderr
 }
