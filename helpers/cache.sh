@@ -23,6 +23,7 @@ DIR=$(dirname "$CACHE")
 mkdir -p "$DIR"
 
 # Has $CACHE been updated within the last hour?
+# shellcheck disable=SC2046
 if [[ -e "$CACHE" ]] && test $(find "$CACHE" -mmin -60)
 then
     # Yes, use it

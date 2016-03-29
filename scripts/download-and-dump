@@ -1,0 +1,26 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p jq
+
+function msg {
+    echo -e "$1" 1>&2
+}
+
+function fail {
+    msg "FAIL: $1"
+    exit 1
+}
+
+msg "Dumping list-extras to nix store"
+DUMP_DIR=$(nix-build --no-out-link --show-trace --keep-failed -E \
+  'with import <nixpkgs> {}; cabal2db-defs.downloadAndDump "list-extras"') ||
+    fail "Couldn't download/dump list-extras ASTs"
+
+DUMP_JSON="$DUMP_DIR/dump.json"
+[[ -e "$DUMP_JSON" ]] || fail "'$DUMP_JSON' wasn't created"
+
+COUNT=$(jq 'length' < "$DUMP_JSON") ||
+    fail "Couldn't count JSON elements in '$DUMP_JSON'"
+
+[[ "$COUNT" -gt 0 ]] || fail "Got '$COUNT' elements in '$DUMP_JSON'"
+
+echo "Pass"
