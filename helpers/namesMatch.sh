@@ -29,8 +29,8 @@ do
 done
 
 [[ -z "$FOUND" ]] || {
-    echo "Found spurious tests:"                 >> /dev/stderr
-    echo "$FOUND" | grep -v '^$'                 >> /dev/stderr
-    echo "These don't correspond to cache lines" >> /dev/stderr
+    echo "Found spurious tests:"
+    echo "$FOUND" | grep -v '^$'
+    echo "These don't correspond to cache lines"
     exit 1
-}
+} >> /dev/stderr
