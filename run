@@ -26,8 +26,13 @@ done
 RESULTS=()
 for NAME in "${NAMES[@]}"
 do
-    RESULT="results/pass/$NAME"
-    rm -f "$RESULT"
+    if [[ "x$NAME" = "xclean" ]]
+    then
+        RESULT="$NAME"
+    else
+        RESULT="results/pass/$NAME"
+        rm -f "$RESULT"
+    fi
     RESULTS+=( "$RESULT" )
 done
 
