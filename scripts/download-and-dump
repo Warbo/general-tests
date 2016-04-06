@@ -10,17 +10,20 @@ function fail {
     exit 1
 }
 
-msg "Dumping list-extras to nix store"
-DUMP_DIR=$(nix-build --no-out-link --show-trace --keep-failed -E \
-  'with import <nixpkgs> {}; cabal2db-defs.downloadAndDump "list-extras"') ||
-    fail "Couldn't download/dump list-extras ASTs"
+for PKG in list-extras text
+do
+    msg "Dumping $PKG to nix store"
+    DUMP_DIR=$(nix-build --no-out-link --show-trace --keep-failed -E \
+      "with import <nixpkgs> {}; cabal2db-defs.downloadAndDump \"$PKG\"") ||
+        fail "Couldn't download/dump '$PKG' ASTs"
 
-DUMP_JSON="$DUMP_DIR/dump.json"
-[[ -e "$DUMP_JSON" ]] || fail "'$DUMP_JSON' wasn't created"
+    DUMP_JSON="$DUMP_DIR/dump.json"
+    [[ -e "$DUMP_JSON" ]] || fail "'$DUMP_JSON' wasn't created"
 
-COUNT=$(jq 'length' < "$DUMP_JSON") ||
-    fail "Couldn't count JSON elements in '$DUMP_JSON'"
+    COUNT=$(jq 'length' < "$DUMP_JSON") ||
+        fail "Couldn't count JSON elements in '$DUMP_JSON'"
 
-[[ "$COUNT" -gt 0 ]] || fail "Got '$COUNT' elements in '$DUMP_JSON'"
+    [[ "$COUNT" -gt 0 ]] || fail "Got '$COUNT' elements in '$DUMP_JSON'"
+done
 
 echo "Pass"

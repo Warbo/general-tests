@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p cabal2db jq
+#! nix-shell --show-trace -i bash -p cabal2db jq
 
 function msg {
     echo -e "$1" 1>&2
