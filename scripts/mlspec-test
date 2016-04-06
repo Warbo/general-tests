@@ -12,17 +12,6 @@ cd "$DIR" || fail "Couldn't cd to '$DIR'"
 [[ "$(find test-data -type f -name "*format*" | wc -l)" -gt 0 ]] ||
     fail "Didn't find any formatted test-data"
 
-for FILE in test-data/*format*
-do
-    NAME=$(basename "$FILE")
-    OTHER=~/Programming/ML4HS/test-data/"$NAME"
-    if [[ -f "$OTHER" ]]
-    then
-        cmp --silent "$FILE" "$OTHER" ||
-            fail "Test file '$FILE' doesn't match source '$OTHER'"
-    fi
-done
-
 hsConfig || fail "hsConfig failed"
 
 ./test.sh

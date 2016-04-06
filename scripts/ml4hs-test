@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-cd ~/Programming/ML4HS || exit 1
-./test.sh
