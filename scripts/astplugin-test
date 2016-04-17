@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 function fail {
     echo "FAIL: $1" >> /dev/stderr
@@ -6,5 +7,7 @@ function fail {
 }
 
 DIR=~/Programming/Haskell/AstPlugin
-cd "$DIR" || fail "Couldn't cd to '$DIR'"
+cd "$DIR"
+[[ -d "dist" ]] && rm -r dist
+hsConfig
 ./test.sh
