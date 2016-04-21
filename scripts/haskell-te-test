@@ -9,4 +9,4 @@ DIR=~/Programming/haskell-te/tests/.. # Appeases test-scripts-included
 cd "$DIR" || fail "Couldn't cd to '$DIR'"
 
 # This sets up the environment for tests/test.sh
-./run-tests.sh
+./test.sh
