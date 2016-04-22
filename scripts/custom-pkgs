@@ -40,18 +40,38 @@ function mkExpr {
     # Since Nix is lazy, knowing that an expression exists doesn't tell us much;
     # we must try to build it, in order to expose problems.
     # We face two difficulties: not everything is a package, and those which are
-    # need to be forced.
+    # need to be forced. If something's not a package, we return `bash` as a
+    # fallback. To prevent headaches, these nested `if` expressions are
+    # structured like a `case`, i.e.
+    # if foo then A
+    #        else if bar then B
+    #                    else if baz then C
+    #                                else D
 
-    # Packages are just attribute sets, so inspecting the type doesn't help us.
-    # As a heuristic, if something contains a "src", it's probably a package
-    echo "if ($1) ? src then ($1)"
+    # Packages are attribute sets, so we restrict ourselves to those (ignoring,
+    # e.g. helper functions and things)
+    echo "if builtins.typeOf ($1) != \"set\" then bash else"
 
-    # If a package has no "src", it might be generated programatically by a
-    # "buildCommand"
-    echo "else if ($1) ? buildCommand then ($1)"
+    # If we have a set, we want to determine if it's a package. If it has
+    # "executable", then it's probably a script rather than a package:
+    echo "if ($1) ? executable && ($1).executable then bash else"
 
-    # If we've not been given a package, fall back to a safe default like bash
+    # If something contains a "src", it's probably a package:
+    echo "if ($1) ? src then ($1) else"
+
+    # If something contains a "buildCommand", it may be a package:
+    echo "if ($1) ? buildCommand then ($1)"
+
+    # Fall back to bash
     echo "else bash"
+}
+
+function checkPkg {
+    EXPR=$(mkExpr "$1")
+    nix-shell --show-trace --run true -p "$EXPR" || {
+        echo "Couldn't invoke nix-shell for '$1' (NIX_LOCAL_ONLY=$NIX_LOCAL_ONLY)" 1>&2
+        exit 1
+    }
 }
 
 # Get the package to test from our invocation name
@@ -89,9 +109,6 @@ then
     exit "$ERR"
 else
     # Got a package, try to build it
-    EXPR=$(mkExpr "$PKG")
-    nix-shell --show-trace --run true -p "$EXPR" || {
-        echo "Couldn't invoke nix-shell for '$PKG'" >> /dev/stderr
-        exit 1
-    }
+    NIX_LOCAL_ONLY=0 checkPkg "$PKG"
+    NIX_LOCAL_ONLY=1 checkPkg "$PKG"
 fi
