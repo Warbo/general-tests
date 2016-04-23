@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cd ~/Programming/Haskell/TreeFeatures || exit 1
-hsConfig
-cabal test
