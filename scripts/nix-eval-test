@@ -13,8 +13,8 @@ DIR=~/Programming/Haskell/nix-eval
 pushd "$DIR" > /dev/null ||
     fail "Couldn't pushd '$DIR'"
 
-cabal test --show-details=streaming ||
-    fail "'cabal test' failed in '$DIR'"
+./test.sh ||
+    fail "'test.sh' failed in '$DIR'"
 
 popd > /dev/null
 
@@ -33,8 +33,8 @@ pushd nix-eval > /dev/null ||
 
 hsConfig || fail "Couldn't hsConfig nix-eval"
 
-cabal test --show-details=streaming ||
-    fail "'cabal test' failed in clone '$DIR'"
+./test.sh ||
+    fail "'test.sh' failed in clone '$DIR'"
 
 popd > /dev/null
 popd > /dev/null

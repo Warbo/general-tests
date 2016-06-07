@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cd ~/Programming/TheoryExplorationBenchmark
+
+./test.sh

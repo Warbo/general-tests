@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 function skip {
+    grep -v "/NotMine/"                         |
     grep -v "/git-html/"                        |
     grep -v "/ghc/"                             |
     grep -v "/quickspec"                        |
@@ -36,7 +37,7 @@ then
         DIR=$(dirname "$CBL")
         FILE=$(basename "$CBL")
 
-        TMP=$(mktemp -d "cabal-test-temp-XXXXX")
+        TMP=$(mktemp --tmpdir -d "cabal-test-temp-XXXXX")
         pushd "$TMP"
 
         rsync -rv --exclude=.git "$DIR" .

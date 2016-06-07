@@ -4,8 +4,13 @@
 FULL=0
 [[ "x$1" = "xfull" ]] && FULL=1
 
+function scripts {
+    find ~/System/Tests    -name "*.sh"
+    find ~/warbo-utilities -name "*.sh"
+}
+
 ERR=0
-for script in ~/.tests/*.sh ~/.tests/scripts/* ~/warbo-utilities/system/*
+while read -r script
 do
     SHEBANG=$(head -n 1 < "$script")
     if echo "$SHEBANG" | grep "#![ ]*/bin/sh" > /dev/null
@@ -25,6 +30,6 @@ do
         ERR=1
     fi
     [[ "$ERR" -eq 0 ]] || [[ "$FULL" -eq 1 ]] || exit 1
-done
+done < <(scripts)
 
 exit "$ERR"

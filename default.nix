@@ -11,7 +11,7 @@ stdenv.mkDerivation {
     haskellPackages.packunused
     haskellPackages.ShellCheck
     mercurial
-    subversionClient
+    #subversionClient
     which
     xidel
   ];

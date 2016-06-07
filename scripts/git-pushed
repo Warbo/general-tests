@@ -12,7 +12,10 @@ function fail {
 
 function repos {
     # Find git repos based on their .git directories
-    locate -e "/home/chris/*/.git"
+    locate -e "/home/chris/*/.git" |
+        grep -v "/System/Programs" |
+        grep -v "/NotMine/"        |
+        grep -v "/OldCode/"
 }
 
 function msg {
