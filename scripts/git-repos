@@ -99,7 +99,7 @@ do
                 # Report anything which isn't version controlled
                 if ! isVC "$DN"
                 then
-                    echo "$ENTRY doesn't look version controlled" >> /dev/stderr
+                    echo "$ENTRY doesn't look version controlled" 1>&2
 
                     # Remember this entry for next time
                     echo "$DN" >> "$FAILS"

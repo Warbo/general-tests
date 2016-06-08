@@ -31,7 +31,7 @@ do
     LOCAL="/home/chris/Programming/repos/$REPO"
     [[ -e "$LOCAL" ]] || {
         ERR=1
-        echo "Could not find '$LOCAL'" >> /dev/stderr
+        echo "Could not find '$LOCAL'" 1>&2
         continue
     }
 
@@ -40,7 +40,7 @@ do
     pushd "$LOCAL" > /dev/null
       grep "url = $REMOTE" < config > /dev/null || {
         ERR=1
-        echo "Repo '$LOCAL' doesn't have remote '$REMOTE'" >> /dev/stderr
+        echo "Repo '$LOCAL' doesn't have remote '$REMOTE'" 1>&2
       }
     popd > /dev/null
 done < <(cached)

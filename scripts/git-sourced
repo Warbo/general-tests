@@ -37,13 +37,13 @@ function remotesExist {
             # gitorious.org is no more
             echo "$URL" | grep "gitorious" > /dev/null && {
                 ERR=1
-                echo "Reference to gitorious found in '$CONF'" >> /dev/stderr
+                echo "Reference to gitorious found in '$CONF'" 1>&2
             }
         else
             echo "Found local '$URL'"
             [[ -e "$URL" ]] || {
                 ERR=1
-                echo "Remote '$URL' doesn't exist in '$CONF'" >> /dev/stderr
+                echo "Remote '$URL' doesn't exist in '$CONF'" 1>&2
             }
         fi
     done < <(getUrls)
@@ -57,7 +57,7 @@ function localsExist {
     do
         echo "Looking for a source of '$REPO'"
         echo "$URLS" | cut -f 2 | grep "$REPO" > /dev/null || {
-            echo "No source found for '$REPO'" >> /dev/stderr
+            echo "No source found for '$REPO'" 1>&2
             ERR=1
         }
     done

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 function fail {
-    echo -e "FAIL: $1" >> /dev/stderr
+    echo -e "FAIL: $1" 1>&2
     exit 1
 }
 
 function tryNixEval {
     CODE=$(codeNixEval)
-    echo -e "RUNNING:\n\n$CODE\n\n---\n" >> /dev/stderr
+    echo -e "RUNNING:\n\n$CODE\n\n---\n" 1>&2
     echo "$CODE" | nix-shell -p 'haskellPackages.ghcWithPackages (h: [ h.nix-eval ])' --run runhaskell
 }
 
@@ -25,12 +25,12 @@ function testNixEval {
 
     [[ "x$RESULT" = "xTrue" ]] || fail "Wrong value"
 
-    echo "testNixEval passed" >> /dev/stderr
+    echo "testNixEval passed" 1>&2
 }
 
 function tryMLSpec {
     CODE=$(codeMLSpec)
-    echo -e "RUNNING:\n\n$CODE\n\n---\n" >> /dev/stderr
+    echo -e "RUNNING:\n\n$CODE\n\n---\n" 1>&2
 
     echo "$CODE" | nix-shell -p 'haskellPackages.ghcWithPackages (h: [ h.mlspec h.nix-eval ])' --run runhaskell ||
         fail "Attempting to evaluate MLSpec-using code aborted"
@@ -62,7 +62,7 @@ function testMLSpec {
     [[ "$ALL_LINES" -eq "$JSON_LINES" ]] ||
         fail "Only $JSON_LINES/$ALL_LINES look like JSON:\n$RESULT"
 
-    echo "testMLSpec passed" >> /dev/stderr
+    echo "testMLSpec passed" 1>&2
 }
 
 echo "Running tests with debug"

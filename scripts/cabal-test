@@ -47,14 +47,14 @@ then
         echo "Running hsConfig in $PWD"
         if ! hsConfig
         then
-            echo "hsConfig in '$DIR'" >> /dev/stderr
+            echo "hsConfig in '$DIR'" 1>&2
             ERR=1
         fi
 
         [[ "$ERR" -eq 0 ]] && while read -r TEST
         do
             cabal test "$TEST" || {
-                echo "Test suite '$TEST' in '$DIR' failed" >> /dev/stderr
+                echo "Test suite '$TEST' in '$DIR' failed" 1>&2
                 ERR=1
             }
         done < <(grep "test-suite" < "$FILE" | sed -e 's/^test-suite *\(.*\)$/\1/g')

@@ -12,7 +12,7 @@ do
     then
         echo "$LINE"
     else
-        echo "Deleting time for non-existent '$SCRIPT'" >> /dev/stderr
+        echo "Deleting time for non-existent '$SCRIPT'" 1>&2
         rm "results/time/$NAME"
     fi
 done

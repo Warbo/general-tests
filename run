@@ -17,7 +17,7 @@ do
     then
         NAMES+=( "$NAME" )
     else
-        echo "Could not find 'scripts/$NAME', using '$ARG'" >> /dev/stderr
+        echo "Could not find 'scripts/$NAME', using '$ARG'" 1>&2
         NAMES+=( "$ARG" )
     fi
 done
@@ -38,7 +38,7 @@ done
 
 if [[ "$#" -eq 0 ]]
 then
-    echo "No tests given, running all" >> /dev/stderr
+    echo "No tests given, running all" 1>&2
     run all
 else
     run "${RESULTS[@]}"

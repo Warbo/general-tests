@@ -19,7 +19,7 @@ then
         pushd "$DIR"
         if ! ./render.sh
         then
-            echo "$SCRIPT failed" >> /dev/stderr
+            echo "$SCRIPT failed" 1>&2
             exit 1
         fi
     done < <(echo "$LINES")

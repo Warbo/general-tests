@@ -16,7 +16,7 @@ function repos {
 }
 
 function msg {
-    echo -e "$1" >> /dev/stderr
+    echo -e "$1" 1>&2
 }
 
 function remotes {

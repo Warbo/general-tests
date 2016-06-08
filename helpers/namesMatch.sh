@@ -33,4 +33,4 @@ done
     echo "$FOUND" | grep -v '^$'
     echo "These don't correspond to cache lines"
     exit 1
-} >> /dev/stderr
+} 1>&2

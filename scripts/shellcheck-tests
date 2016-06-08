@@ -8,7 +8,7 @@ FULL=0
 
 function msg {
     true
-    echo "$1" >> /dev/stderr
+    echo "$1" 1>&2
 }
 
 function data {

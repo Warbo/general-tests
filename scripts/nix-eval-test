@@ -5,7 +5,7 @@
 # from the source directory
 
 function fail {
-    echo "FAIL: $1" >> /dev/stderr
+    echo "FAIL: $1" 1>&2
     exit 1
 }
 
@@ -26,7 +26,7 @@ popd > /dev/null
 DIR=$(mktemp -d -t 'nix-eval-test-XXXXX')
 pushd "$DIR" > /dev/null ||
     fail "Couldn't pushd temp dir '$DIR'"
-echo "Made temp directory '$DIR'" >> /dev/stderr
+echo "Made temp directory '$DIR'" 1>&2
 
 git clone http://chriswarbo.net/git/nix-eval.git nix-eval ||
     fail "Couldn't clone nix-eval"

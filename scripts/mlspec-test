@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function fail {
-    echo "FAIL: $1" >> /dev/stderr
+    echo "FAIL: $1" 1>&2
     exit 1
 }
 

@@ -40,7 +40,7 @@ cached > /dev/null
 echo "Cache filled"
 
 function fail {
-    echo "FAIL: $1" >> /dev/stderr
+    echo "FAIL: $1" 1>&2
     [[ "$FULL" -eq 1 ]] || exit 1
 }
 

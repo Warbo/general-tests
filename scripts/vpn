@@ -10,13 +10,13 @@ fi
 # Make sure we're on the VPN
 if ! nmcli c show --active | grep "Dundee Computing" > /dev/null
 then
-    echo "Not on VPN" >> /dev/stderr
+    echo "Not on VPN" 1>&2
     exit 1
 fi
 
 # Make sure our Samba share is mounted
 if ! mount | grep "Uni" > /dev/null
 then
-    echo "Samba share not mounted" >> /dev/stderr
+    echo "Samba share not mounted" 1>&2
     exit 1
 fi

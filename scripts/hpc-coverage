@@ -41,7 +41,7 @@ then
         fi
         if [[ "$RESULT" -lt "$MINIMUM" ]]
         then
-            echo "'$RESULT' coverage for '$LINE'" >> /dev/stderr
+            echo "'$RESULT' coverage for '$LINE'" 1>&2
             exit 1
         fi
     done < <(echo "$LINES")
