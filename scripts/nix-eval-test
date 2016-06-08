@@ -13,6 +13,9 @@ DIR=~/Programming/Haskell/nix-eval
 pushd "$DIR" > /dev/null ||
     fail "Couldn't pushd '$DIR'"
 
+hsConfig ||
+    fail "Couldn't configure"
+
 ./test.sh ||
     fail "'test.sh' failed in '$DIR'"
 

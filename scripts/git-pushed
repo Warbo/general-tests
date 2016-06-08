@@ -12,10 +12,7 @@ function fail {
 
 function repos {
     # Find git repos based on their .git directories
-    locate -e "/home/chris/*/.git" |
-        grep -v "/System/Programs" |
-        grep -v "/NotMine/"        |
-        grep -v "/OldCode/"
+    locate -e "/home/chris/*/.git" | skip
 }
 
 function msg {
@@ -27,11 +24,7 @@ function remotes {
     # anything else since they're case-by-case. For example, we might
     # have a read-only "upstream" for fetching, with pushes going via
     # pull requests from "github"
-    git remote | while read -r R
-    do
-        [[ "x$R" = "xorigin" ]] && echo "$R"
-        [[ "x$R" = "xgithub" ]] && echo "$R"
-    done
+    git remote | grep -e '\(origin\|github\)'
 }
 
 function branches {
@@ -57,9 +50,15 @@ function data {
 }
 
 function skip {
-    grep -v "opencl-horde" |
-    grep -v "/Backups/"    |
-    grep -v "/git-html"
+    grep -v "opencl-horde"          |
+    grep -v "/Backups/"             |
+    grep -v "/git-html"             |
+    grep -v "/System/Programs"      |
+    grep -v "/NotMine/"             |
+    grep -v "/OldCode/"             |
+    grep -v "/Marking/"             |
+    grep -v "/haskell-te/packages/" |
+    grep -v "/TheoryExplorationBenchmark/modules/"
 }
 
 function cached {
@@ -74,6 +73,7 @@ function checkRepos {
     while read -r REPO
     do
         [[ -e "$REPO" ]] || { echo "Skipping non-existent '$REPO'"; continue; }
+        echo "Checking '$REPO'" 1>&2
 
         pushd "$REPO" > /dev/null
 
