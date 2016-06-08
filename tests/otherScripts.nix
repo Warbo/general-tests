@@ -26,20 +26,7 @@ scripts = fold (f: rest: rest // listToAttrs [{
                (filter (n: n != "testsUsingNix")
                        (attrNames (readDir ../scripts)));
 
-scriptResult = f: fromJSON (runScript {} ''
-                    if "${toString ../scripts}"/"${f}" 1> stdout 2> stderr
-                    then
-                      RESULT=true
-                    else
-                      RESULT=false
-                    fi
-
-                    STDOUT=$(nix-store --add stdout)
-                    STDERR=$(nix-store --add stderr)
-
-                    printf '{"result": %s, "info": {"stdout": "%s", "stderr": "%s"}}' \
-                           "$RESULT" "$STDOUT" "$STDERR" > "$out"
-                  '');
+scriptResult = f: scriptTest { script = "${toString ../scripts}/${f}"; };
 
 resultsOf = n: { name = n; value = scriptResult n; };
 
