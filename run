@@ -1,45 +1,95 @@
 #! /usr/bin/env nix-shell
 #! nix-shell --show-trace -i bash
 
+shopt -s nullglob
+
+# Tests go through four phases:
+#  - New: either un-run or failed, these scripts have no associated files
+#  - Running: these have a file in running/
+#  - Passed: these have a file in pass/
+#  - To-check: these have a file in check/
+#
+# Passed and to-check are considered "successful".
+
 function run {
     make -k -j2 "$@"
 }
 
-# Check that arguments refer to tests
-NAMES=()
-for ARG in "$@"
-do
-    # Strip off any path; we want "scripts/foo" to be "foo", since the former is
-    # a file, and hence we get tab-completion for free
-    NAME=$(basename "$ARG")
+function arrangeArgs {
+    # Check that arguments refer to tests
+    NAMES=()
+    for ARG in "$@"
+    do
+        # Strip off any path; we want "scripts/foo" to be "foo", since the
+        # former is a file, and hence we get tab-completion for free
+        NAME=$(basename "$ARG")
 
-    if [[ -e "scripts/$NAME" ]]
+        if [[ -e "scripts/$NAME" ]]
+        then
+            NAMES+=( "$NAME" )
+        else
+            echo "Could not find 'scripts/$NAME', using '$ARG'" 1>&2
+            NAMES+=( "$ARG" )
+        fi
+    done
+
+    # Force re-execution of tests by deleting previous "pass" files, if any.
+    RESULTS=()
+    for NAME in "${NAMES[@]}"
+    do
+        if [[ "x$NAME" = "xclean" ]]
+        then
+            RESULT="$NAME"
+        else
+            RESULT="results/pass/$NAME"
+            if [[ -e "$RESULT" ]]
+            then
+                mv "$RESULT" results/check/
+            fi
+        fi
+        RESULTS+=( "$RESULT" )
+    done
+}
+
+function cleanUp {
+    # Files in running/ are cleaned up after a test passes, so these represent
+    # failures. If they were checks, they've failed.
+    for F in results/running/*
+    do
+        rm -f results/check/"$(basename "$F")"
+    done
+
+    # Nothing is running anymore
+    rm -f results/running/*
+
+    # Make sure files are associated with existing tests
+    for F in results/pass/* results/check/*
+    do
+        NAME=$(basename "$F")
+        [[ -e scripts/"$NAME" ]] || rm -f "$F"
+    done
+}
+
+printf "Waiting for testing lock..." 1>&2
+(
+    flock -x 200
+
+    # Clean up leftovers of previous tests
+    cleanUp
+
+    arrangeArgs "$@"
+
+    if [[ "$#" -eq 0 ]]
     then
-        NAMES+=( "$NAME" )
+        echo "No tests given, running all" 1>&2
+        run all
+        CODE="$?"
     else
-        echo "Could not find 'scripts/$NAME', using '$ARG'" 1>&2
-        NAMES+=( "$ARG" )
+        run "${RESULTS[@]}"
+        CODE="$?"
     fi
-done
 
-# Force re-execution of tests by deleting previous "pass" files, if any
-RESULTS=()
-for NAME in "${NAMES[@]}"
-do
-    if [[ "x$NAME" = "xclean" ]]
-    then
-        RESULT="$NAME"
-    else
-        RESULT="results/pass/$NAME"
-        rm -f "$RESULT"
-    fi
-    RESULTS+=( "$RESULT" )
-done
+    cleanUp
 
-if [[ "$#" -eq 0 ]]
-then
-    echo "No tests given, running all" 1>&2
-    run all
-else
-    run "${RESULTS[@]}"
-fi
+    exit "$CODE"
+) 200>/tmp/test.lock
