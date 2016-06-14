@@ -12,11 +12,17 @@ function msg {
 }
 
 function data {
-    my_shellscripts
+    my_shellscripts | skip
 }
 
 function rawCached {
     ./helpers/cache.sh "$(basename "$0")" < <(data)
+}
+
+function skip {
+    grep -v "\.rkt$"                |
+    grep -v "/haskell-te/packages/" |
+    grep -v "/TheoryExplorationBenchmark/modules/"
 }
 
 function cached {
@@ -24,7 +30,7 @@ function cached {
     while read -r LINE
     do
         [[ -f "$LINE" ]] && echo "$LINE"
-    done < <(rawCached)
+    done < <(rawCached | skip)
 }
 
 cached > /dev/null
