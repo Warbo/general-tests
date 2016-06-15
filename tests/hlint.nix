@@ -1,20 +1,26 @@
-pkgs: with pkgs; with builtins; with lib;
+pkgs: now: with pkgs; with builtins; with lib;
 
 rec {
 
 dir  = builtins.getEnv "HOME" + "/Programming/Haskell";
 
-dirs = map (d: dir + "/" + d)
-           (attrNames (readDir dir));
+dirs = filter keep (map (d: dir + "/" + d)
+                        (attrNames (readDir dir)));
 
-hlintIn = d: scriptTest {
-            env = { buildInputs = [ haskellPackages.hlint ]; };
-            script = ''
-                hlint -XNoCPP "--ignore=Parse error" "${d}"
-              '';
-          };
+keep = x: ! (any (re: match re x != null) [
+              ".*/Haskell/quickcheck$"
+              ".*/Haskell/imm$"
+              ".*/Haskell/ifcxt$"
+            ]);
 
-results = listToAttrs (map (d: { name = "hlint in d"; value = hlintIn d; })
-                           dirs);
+hlintIn = d: scriptTest "hlint in ${d}" {
+               env = { buildInputs = [ haskellPackages.hlint ]; };
+               script = ''
+                 # Timestamp ${toString now}
+                 hlint -XNoCPP "--ignore=Parse error" "${d}"
+               '';
+             };
 
-}
+result = all hlintIn dirs;
+
+}.result

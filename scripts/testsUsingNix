@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 
-RESULT=$(nix-instantiate --read-write-mode --show-trace --eval \
-                         -E '(import ./test.nix).allSuccess')
-
-[[ "x$RESULT" = "xtrue" ]]
+nix-instantiate --read-write-mode --show-trace --eval \
+                -E 'import ./test.nix builtins.currentTime' 2>&1 | grep "^trace: not ok"

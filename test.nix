@@ -2,37 +2,36 @@ with import <nixpkgs> {};
 with lib;
 with builtins;
 
-rec {
+now: rec {
 
-args = pkgs // { inherit scriptTest; };
+args = pkgs // { inherit scriptTest testMsg; };
 
-getTest = x: old: old // listToAttrs [{
-                           name  = x;
-                           value = import (./tests + "/${x}") args;
-                         }];
-tests   = fold getTest
-               {}
-               (filter (hasSuffix ".nix")
-                       (attrNames (readDir ./tests)));
+testMsg = msg: dbg: x:
+            let info = toJSON { inherit dbg msg; };
+                m    = if x then "ok - ${msg}"
+                            else "not ok - ${msg}\n${info}";
+             in addErrorContext info (trace m true);
 
-scriptTest = { env ? {}, script }: fromJSON (runScript env ''
-               if ${writeScript "script-test" script} 1> stdout 2> stderr
-               then
-                 RESULT=true
-               else
-                 RESULT=false
-               fi
+scriptTest = msg: { env ? {}, script }:
+               let file   = writeScript "script-test" script;
+                   result = fromJSON (runScript env ''
+                     if ${file} 1> stdout 2> stderr
+                     then
+                       RESULT=true
+                     else
+                       RESULT=false
+                     fi
 
-               STDOUT=$(nix-store --add stdout)
-               STDERR=$(nix-store --add stderr)
+                     STDOUT=$(nix-store --add stdout)
+                     STDERR=$(nix-store --add stderr)
 
-               printf '{"result":%s, "info":{"stdout":"%s", "stderr":"%s"}}' \
-                      "$RESULT" "$STDOUT" "$STDERR" > "$out"
-             '');
+                     printf '{"result":%s, "stdout":"%s", "stderr":"%s"}' \
+                            "$RESULT" "$STDOUT" "$STDERR" > "$out"
+                   '');
+                in testMsg msg result result.result;
 
-results = fold (x: rest: rest // tests."${x}".results) {} (attrNames tests);
+allSuccess = all (x: import (./tests + "/${x}") args now)
+                 (filter (hasSuffix ".nix")
+                         (attrNames (readDir ./tests)));
 
-allSuccess = all (n: results."${n}".result)
-                 (attrNames results);
-
-}
+}.allSuccess

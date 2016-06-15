@@ -1,4 +1,4 @@
-pkgs:
+pkgs: now:
 
 with pkgs;
 with lib;
@@ -26,10 +26,9 @@ scripts = fold (f: rest: rest // listToAttrs [{
                (filter (n: n != "testsUsingNix")
                        (attrNames (readDir ../scripts)));
 
-scriptResult = f: scriptTest { script = "${toString ../scripts}/${f}"; };
+resultsOf = n: scriptTest "Running ${n}"
+                 { script = "${toString ../scripts}/${n}"; };
 
-resultsOf = n: { name = n; value = scriptResult n; };
+result = all resultsOf (attrNames scripts);
 
-results = listToAttrs (map resultsOf (attrNames scripts));
-
-}
+}.result
