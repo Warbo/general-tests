@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+function data {
+    locate "shell.nix"
+    locate "default.nix"
+}
+
+function skip {
+    grep -v "/Programming/git-html/" |
+    grep -v "/System/Programs/"      |
+    grep -v "/Backups/OldCode/"      |
+    grep -v "/Programming/NotMine/"  |
+    grep -v "/System/Packages/"      |
+    grep -v "/haskell-te/packages/"
+}
+
+function cached {
+    ./helpers/cache.sh "havePersistentShells" < <(data | skip) | skip
+}
+
+cached > /dev/null
+
+ERR=0
+
+while read -r F
+do
+    [[ -e "$F" ]] || continue
+
+    DIR=$(dirname "$F")
+    DRV="$DIR/shell.drv"
+
+    [[ -e "$DRV" ]] && continue
+
+    echo "Couldn't find '$DRV'" 1>&2
+    ERR=1
+done < <(cached)
+
+exit "$ERR"
