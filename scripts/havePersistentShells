@@ -6,12 +6,18 @@ function data {
 }
 
 function skip {
-    grep -v "/Programming/git-html/" |
-    grep -v "/System/Programs/"      |
-    grep -v "/Backups/OldCode/"      |
-    grep -v "/Programming/NotMine/"  |
-    grep -v "/System/Packages/"      |
-    grep -v "/haskell-te/packages/"
+    grep -v "/Programming/git-html/"           |
+    grep -v "/System/Programs/"                |
+    grep -v "/Backups/OldCode/"                |
+    grep -v "/Programming/NotMine/"            |
+    grep -v "/System/Packages/"                |
+    grep -v "/haskell-te/packages/"            |
+    grep -v "/haskell-te/annotatedb/"          |
+    grep -v "/haskell-te/ml4hs/"               |
+    grep -v "/haskell-te/nix-support/"         |
+    grep -v "haskell-te/recurrent-clustering/" |
+    grep -v "/.nixpkgs/" |
+    grep -v "/Writing/"
 }
 
 function cached {
