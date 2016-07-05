@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+ERR=0
+
+function report {
+    if [[ "$1" -eq 0 ]]
+    then
+        echo "ok - $2"
+    else
+        echo "not ok - $2"
+        ERR=1
+    fi
+    return "$1"
+}
+
+DIR=~/.nixpkgs
+cd "$DIR"
+report "$?" "Found $DIR" || exit 1
+
+for ATTR in haskell
+do
+    nix-build -A "$ATTR" release.nix
+    report "$?" "Built '$ATTR' attribute of $DIR/release.nix"
+done
+
+exit "$ERR"

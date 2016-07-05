@@ -8,7 +8,6 @@ stdenv.mkDerivation {
     darcs
     gnumake
     haskellPackages.hlint
-    haskellPackages.packunused
     haskellPackages.ShellCheck
     mercurial
     #subversionClient

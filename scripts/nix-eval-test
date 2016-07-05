@@ -4,40 +4,55 @@
 # during installation. Hence to make sure the tests are running, we run them
 # from the source directory
 
-function fail {
-    echo "FAIL: $1" 1>&2
-    exit 1
+function testMsg {
+    if [[ "$1" -eq 0 ]]
+    then
+        echo "ok - $2"
+    else
+        echo "not ok - $2"
+        exit 1
+    fi
+}
+
+function runTest {
+    for PKGS in "" "(import <nixpkgs> {}).stable"
+    do
+        for COMPILER in "" ghc7102 ghc7103 ghc783 ghc784 ghc801
+        do
+            export PKGS
+            export COMPILER
+
+            hsConfig
+            testMsg "$?" \
+                     "Configured with DIR=$DIR, PKGS=$PKGS, COMPILER=$COMPILER"
+
+            ./test.sh
+            testMsg "$?" "Tested with DIR=$DIR, PKGS=$PKGS, COMPILER=$COMPILER"
+        done
+    done
 }
 
 DIR=~/Programming/Haskell/nix-eval
-pushd "$DIR" > /dev/null ||
-    fail "Couldn't pushd '$DIR'"
+pushd "$DIR" > /dev/null
+testMsg "$?" "Entered '$DIR'"
 
-hsConfig ||
-    fail "Couldn't configure"
-
-./test.sh ||
-    fail "'test.sh' failed in '$DIR'"
+runTest
 
 popd > /dev/null
 
 # We also clone the source and test that too, in case our copy is
 # unrepresentative
 DIR=$(mktemp -d -t 'nix-eval-test-XXXXX')
-pushd "$DIR" > /dev/null ||
-    fail "Couldn't pushd temp dir '$DIR'"
-echo "Made temp directory '$DIR'" 1>&2
+pushd "$DIR" > /dev/null
+testMsg "$?" "Entered temp dir"
 
-git clone http://chriswarbo.net/git/nix-eval.git nix-eval ||
-    fail "Couldn't clone nix-eval"
+git clone http://chriswarbo.net/git/nix-eval.git nix-eval
+testMsg "$?" "Cloned nix-eval"
 
-pushd nix-eval > /dev/null ||
-    fail "Couldn't pushd into nix-eval"
+pushd nix-eval > /dev/null
+testMsg "$?" "Entered nix-eval clone"
 
-hsConfig || fail "Couldn't hsConfig nix-eval"
-
-./test.sh ||
-    fail "'test.sh' failed in clone '$DIR'"
+runTest
 
 popd > /dev/null
 popd > /dev/null
