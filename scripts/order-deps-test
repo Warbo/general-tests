@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -e
-pushd /home/chris/Programming/Haskell/order-deps
-hsConfig
-./test.sh
