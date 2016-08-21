@@ -9,5 +9,4 @@ function fail {
 DIR=~/Programming/Haskell/AstPlugin
 cd "$DIR"
 [[ -d "dist" ]] && rm -r dist
-hsConfig
-./test.sh
+nix-build --show-trace -E 'import ./test.nix'
