@@ -15,21 +15,11 @@ function testMsg {
 }
 
 function runTest {
-    for PKGS in "" "(import <nixpkgs> {}).stable"
-    do
-        for COMPILER in "" ghc7102 ghc7103 ghc783 ghc784 ghc801
-        do
-            export PKGS
-            export COMPILER
+  hsConfig
+  testMsg "$?" "Configured with DIR=$DIR"
 
-            hsConfig
-            testMsg "$?" \
-                     "Configured with DIR=$DIR, PKGS=$PKGS, COMPILER=$COMPILER"
-
-            ./test.sh
-            testMsg "$?" "Tested with DIR=$DIR, PKGS=$PKGS, COMPILER=$COMPILER"
-        done
-    done
+  ./test.sh
+  testMsg "$?" "Tested with DIR=$DIR"
 }
 
 DIR=~/Programming/Haskell/nix-eval

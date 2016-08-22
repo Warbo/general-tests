@@ -40,12 +40,6 @@ MSG="Unhandled documents ($FRACTION %) at acceptable limit ($ALLOWED %)"
 if [[ "$FRACTION" -gt "$ALLOWED" ]]
 then
     echo "not ok - $MSG"
-    ERR=1
-elif [[ "$FRACTION" -lt "$ALLOWED" ]]
-then
-    echo "not ok - $MSG"
-    echo "RATCHET DOWN 'ALLOWED' TO '$FRACTION'!" 1>&2
-    ERR=1
 else
     echo "ok - $MSG"
 fi

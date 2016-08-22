@@ -7,7 +7,7 @@ PID="$!"
 sleep 20
 
 MSG="Conkeror doesn't crash on startup"
-if ps auxww | grep "$PID" | grep "conkeror"
+if pgrep ".*conkeror.*"
 then
     echo "ok - $MSG"
 else
