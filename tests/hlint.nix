@@ -1,52 +1,56 @@
-#!/usr/bin/env bash
+with import <nixpkgs> {};
 
-shopt -s nullglob
+writeScript "hlint" ''
+  #!/usr/bin/env bash
 
-# Pass in the argument "full" to keep going after a failure
-FULL=0
-[[ "x$1" = "xfull" ]] && FULL=1
+  shopt -s nullglob
 
-# Run hlint on (almost) everything in ~/Programming/Haskell
+  # Pass in the argument "full" to keep going after a failure
+  FULL=0
+  [[ "x$1" = "xfull" ]] && FULL=1
 
-function hs {
+  # Run hlint on (almost) everything in ~/Programming/Haskell
+
+  function hs {
     my_haskell
     for FILE in ~/Programming/Haskell/*.hs ~/Programming/Haskell/*.lhs
     do
-        echo "$FILE"
+      echo "$FILE"
     done
-}
+  }
 
-function skip {
+  function skip {
     grep -v "/Haskell/quickcheck$" |
     grep -v "/Haskell/imm$"        |
     grep -v "/Haskell/ifcxt$"
-}
+  }
 
-function data {
+  function data {
     hs | skip
-}
+  }
 
-function cached {
+  function cached {
     ./helpers/cache.sh "hlint" < <(data)
-}
+  }
 
-cached > /dev/null
+  cached > /dev/null
 
-ERR=0
-if NAME=$(./helpers/getName.sh "$0")
-then
+  ERR=0
+  if NAME=$(./helpers/getName.sh "$0")
+  then
     LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || ERR=1
     while IFS= read -r HASKELL
     do
-        echo "Processing '$HASKELL'"
-        if ! hlint -XNoCPP "--ignore=Parse error" "$HASKELL"
-        then
-            ERR=1
-            [[ "$FULL" -eq 1 ]] || exit 1
-        fi
+      echo "Processing '$HASKELL'"
+      if ! hlint -XNoCPP "--ignore=Parse error" "$HASKELL"
+      then
+        ERR=1
+        [[ "$FULL" -eq 1 ]] || exit 1
+      fi
     done < <(echo "$LINES")
-else
+  else
     ./helpers/namesMatch.sh "hlint" < <(cached) || exit 1
-fi
+  fi
 
-exit "$ERR"
+  exit "$ERR"
+''
