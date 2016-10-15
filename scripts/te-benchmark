@@ -3,4 +3,4 @@ set -e
 
 cd ~/Programming/TheoryExplorationBenchmark
 
-nix-shell --run "./test.sh"
+nix-shell --run "raco test defs.rkt"

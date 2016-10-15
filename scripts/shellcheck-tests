@@ -22,7 +22,21 @@ function rawCached {
 function skip {
     grep -v "\.rkt$"                |
     grep -v "/haskell-te/packages/" |
-    grep -v "/TheoryExplorationBenchmark/modules/"
+    grep -v "/TheoryExplorationBenchmark/modules/" | while read -r F
+    do
+        if head -n1 < "$F" | grep    "nix-shell"     > /dev/null &&
+           head -n2 < "$F" | grep -- "-i runhaskell" > /dev/null
+        then
+            # Skip Haskell file
+            continue
+        fi
+        if head -n1 < "$F" | grep "racket" > /dev/null
+        then
+            # Skip Racket file
+            continue
+        fi
+        echo "$F"
+    done
 }
 
 function cached {
