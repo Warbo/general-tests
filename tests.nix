@@ -6,20 +6,21 @@ with rec {
 
   pathSafe = replaceStrings ["/"] ["_"];
 
-  tests   = mapAttrs (n: _: import (./tests + "/${n}"))
-                     (readDir ./tests);
+  defs     = mapAttrs (n: _: import (./tests + "/${n}"))
+                      (readDir ./tests);
 
-  scripts = listToAttrs
-              (concatMap (test: map (script: rec {
-                                      name  = pathSafe "${test}.${script}";
-                                      value = {
-                                        script = tests."${test}"."${script}";
+  tests    = listToAttrs
+               (concatMap (def: map (test: rec {
+                                      name  = pathSafe "${def}.${test}";
+                                      value = rec {
+                                        script = defs."${def}"."${test}";
                                         pass   = (readDir ./results/pass) ? name;
+                                        drv    = script.drvPath;
                                       };
                                     })
-                                (attrNames tests."${test}"))
-                         (attrNames tests));
+                                    (attrNames defs."${def}"))
+                          (attrNames defs));
 
 };
 
-scripts
+tests

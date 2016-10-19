@@ -1,56 +1,44 @@
 with import <nixpkgs> {};
+with builtins;
 
-writeScript "hlint" ''
-  #!/usr/bin/env bash
+let
+  getProjects = runCommand "projects"
+    {
+      buildInputs = [ findutils gnused ];
+      LOCATE_PATH = getEnv "LOCATE_PATH";
+    }
+    ''
+      #!{$bash}/bin/bash
+      shopt -s nullglob
 
-  shopt -s nullglob
+      function hs {
+        echo "["
 
-  # Pass in the argument "full" to keep going after a failure
-  FULL=0
-  [[ "x$1" = "xfull" ]] && FULL=1
+        # Standalone Haskell files
+        DIR="~/Programming/Haskell/"
+        echo "$DIR"*.hs
+        echo "$DIR"*.lhs
 
-  # Run hlint on (almost) everything in ~/Programming/Haskell
+        # Project directories
+        "${../helpers/my_haskell.sh}"     |
+          grep -v "/Haskell/quickcheck$"  |
+          grep -v "/Haskell/imm$"         |
+          grep -v "/Haskell/ifcxt$"
 
-  function hs {
-    my_haskell
-    for FILE in ~/Programming/Haskell/*.hs ~/Programming/Haskell/*.lhs
-    do
-      echo "$FILE"
-    done
-  }
+        echo "]"
+      }
 
-  function skip {
-    grep -v "/Haskell/quickcheck$" |
-    grep -v "/Haskell/imm$"        |
-    grep -v "/Haskell/ifcxt$"
-  }
+      hs > "$out"
+    '';
 
-  function data {
-    hs | skip
-  }
+  projects = import "${getProjects}";
 
-  function cached {
-    ./helpers/cache.sh "hlint" < <(data)
-  }
+  mkTest = name: {
+    name = toString name;
+    value = writeScript "hlint" ''
+      #!${bash}/bin/bash
+      hlint -XNoCPP "--ignore=Parse error" "${name}"
+    '';
+  };
 
-  cached > /dev/null
-
-  ERR=0
-  if NAME=$(./helpers/getName.sh "$0")
-  then
-    LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || ERR=1
-    while IFS= read -r HASKELL
-    do
-      echo "Processing '$HASKELL'"
-      if ! hlint -XNoCPP "--ignore=Parse error" "$HASKELL"
-      then
-        ERR=1
-        [[ "$FULL" -eq 1 ]] || exit 1
-      fi
-    done < <(echo "$LINES")
-  else
-    ./helpers/namesMatch.sh "hlint" < <(cached) || exit 1
-  fi
-
-  exit "$ERR"
-''
+in listToAttrs (map mkTest projects)

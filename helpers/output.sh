@@ -8,10 +8,6 @@
 for ARG in "$@"
 do
     NAME=$(basename "$ARG")
-    [[ -e "scripts/$NAME" ]] || {
-        echo "Could not find 'scripts/$NAME'" 1>&2
-        exit 1
-    }
 
     echo "CONTENTS OF STDOUT (results/stdout/$NAME)"
     cat "results/stdout/$NAME"
