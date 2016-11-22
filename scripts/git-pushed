@@ -58,6 +58,7 @@ function skip {
     grep -v "/OldCode/"             |
     grep -v "/Marking/"             |
     grep -v "/haskell-te/packages/" |
+    grep -v "\.stack"               |
     grep -v "/TheoryExplorationBenchmark/modules/"
 }
 

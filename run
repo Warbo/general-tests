@@ -11,8 +11,6 @@ shopt -s nullglob
 #
 # Passed and to-check are considered "successful".
 
-ATTRS=$(./helpers/tests.sh)
-
 function run {
     make -k -j2 "$@"
 }
@@ -63,22 +61,6 @@ function cleanUp {
 
     # Nothing is running anymore
     rm -f results/running/*
-
-    # Make sure files are associated with existing tests
-    for F in results/pass/* results/check/*
-    do
-        NAME=$(basename "$F")
-        if [[ -e scripts/"$NAME" ]]
-        then
-            true
-        elif ./helpers/attrnames.sh | grep -F "$NAME" > /dev/null
-        then
-            true
-        else
-            echo "Removing old result '$F'" 1>&2
-            rm -f "$F"
-        fi
-    done
 }
 
 printf "Waiting for testing lock..." 1>&2

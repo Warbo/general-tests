@@ -5,7 +5,8 @@ function fail {
     exit 1
 }
 
-OUTPUT=$(imm -u 2>&1) || fail "imm aborted: $OUTPUT"
+OUTPUT=$(nix-shell -p 'haskellPackages.imm' --run "imm -u" 2>&1) ||
+    fail "imm aborted: $OUTPUT"
 
 if echo "$OUTPUT" | grep "Recompiling." > /dev/null
 then

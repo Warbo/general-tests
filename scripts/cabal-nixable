@@ -5,7 +5,7 @@ function data {
     while read -r PROJECT
     do
         find "$PROJECT" -maxdepth 1 -name "*.cabal"
-    done < <(my_haskell)
+    done < <(./helpers/my_haskell.sh)
 }
 
 function cached {

@@ -4,7 +4,7 @@
 shopt -s nullglob
 
 function cached {
-    ./helpers/cache.sh "haskell-builds" < <(my_haskell)
+    ./helpers/cache.sh "haskell-builds" < <(./helpers/my_haskell.sh)
 }
 
 function report {
