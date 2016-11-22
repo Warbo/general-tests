@@ -4,7 +4,7 @@ with builtins;
 let
 getProjects = runCommand "projects"
   {
-    buildInputs = [ findutils gnused ];
+    buildInputs = [ findutils gnused jq ];
     LOCATE_PATH = getEnv "LOCATE_PATH";
   }
   ''
@@ -31,25 +31,22 @@ getProjects = runCommand "projects"
       done < <(locate -e "/home/chris/Programming/*.cabal" | skip)
     }
 
-    function data {
-      echo "["
-      dirs
-      echo "]"
-    }
-
-    data > "$out"
+    dirs | grep '^.' | jq -R '.' | jq -s '.' > "$out"
   '';
 
-projects = import "${getProjects}";
+projects = fromJSON (readFile "${getProjects}");
 
-cabal = "${haskellPackages.cabal-install}/bin/cabal";
-
-mkTest = dir: writeScript "cabal-test" ''
+mkTest = dir:
+  let script = writeScript "cabal-test" ''
   #!${racket}/bin/racket
   #lang racket
   (require racket/system)
 
   (define dir "${dir}")
+
+  (define cabal
+    (or (find-executable-path "cabal")
+        (error "Couldn't find cabal executable")))
 
   (define tmp
     (path->string
@@ -59,7 +56,7 @@ mkTest = dir: writeScript "cabal-test" ''
     (string-append tmp "/src"))
 
   (define (run-suite suite)
-    (unless (system* "${cabal}" "test" suite)
+    (unless (system* cabal "test" suite)
       (error "Failed to run suite " suite)))
 
   (define (suites-from cbl)
@@ -78,6 +75,10 @@ mkTest = dir: writeScript "cabal-test" ''
       (copy-directory/files dir src)
 
       (parameterize ([current-directory src])
+        (call-with-exception-handler
+          (lambda (e) #t)
+          (lambda () (delete-directory/files "dist")))
+
         (eprintf "Configuring\n")
         (unless (system* "${warbo-utilities}/bin/hsConfig")
           (error "Failed to configure"))
@@ -103,6 +104,11 @@ mkTest = dir: writeScript "cabal-test" ''
   ;;  mkdir -p ~/Programming/coverage/"$NAME"
   ;;  cp -vr "$HPC" ~/Programming/coverage/"$NAME/"
   ;;done < <(find . -type d -name html)
+'';
+in runCommand "wrap-script" { buildInputs = [ makeWrapper ]; } ''
+  #!${bash}/bin/bash
+  makeWrapper "${script}" "$out" \
+    --prefix PATH : "${haskellPackages.cabal-install}/bin"
 '';
 
 in listToAttrs (map (p: { name = toString p; value = mkTest p; }) projects)

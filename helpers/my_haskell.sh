@@ -26,6 +26,7 @@ function allDirs {
     do
         [[ -d "$DIR" ]] && echo "$DIR"
     done
+    export LOCATE_PATH=/var/cache/locatedb
     locate -e "/home/chris/Programming/Haskell/*.cabal" | while read -r LINE
     do
         dirname "$LINE"
