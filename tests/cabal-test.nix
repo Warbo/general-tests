@@ -2,7 +2,7 @@
 with builtins;
 with {
   inherit (pkgs)
-    bash findutils gnused haskellPackages jq latestGit runCabal2nix runCommand
+    bash /*findutils*/ gnused haskellPackages jq latestGit runCabal2nix runCommand
     sanitiseName stdenv;
   inherit (helpers)
     haskellRepos;
