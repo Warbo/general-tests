@@ -8,7 +8,7 @@ with {
     haskellRepos;
 };
 rec {
-
+/*
 getCabalFiles = stdenv.mkDerivation {
   name         = "cabal-files";
   repos        = map (url: latestGit { inherit url; }) haskellRepos;
@@ -16,13 +16,13 @@ getCabalFiles = stdenv.mkDerivation {
   LOCATE_PATH  = getEnv "LOCATE_PATH";
   buildCommand = ''
     function skip {
-      grep -v "/NotMine/"                         |
-      grep -v "/git-html/"                        |
-      grep -v "/ghc/"                             |
-      grep -v "/quickspec"                        |
-      grep -v "/unification"                      |
-      grep -v "/structural-induction"             |
-      grep -v "haskell-te/cache/"                 |
+      grep -v "/NotMine/"             |
+      grep -v "/git-html/"            |
+      grep -v "/ghc/"                 |
+      grep -v "/quickspec"            |
+      grep -v "/unification"          |
+      grep -v "/structural-induction" |
+      grep -v "haskell-te/cache/"     |
       grep -v "haskell-te/packages"
     }
 
@@ -99,18 +99,6 @@ mkTest = cabalFile:
         exit 1
       }
 
-      function runSuite {
-        cabal test "$1" || fail "Failed to run suite $1"
-      }
-
-      function suitesFrom {
-        tr '[:upper:]' '[:lower:]' < "$1" |
-        grep "test-suite"                 |
-        cut -d ':' -f2                    |
-        sed -e 's/^ *//g'                 |
-        sed -e 's/ *$//g'
-      }
-
       echo "Making mutable copy of source" 1>&2
       cp -r "$src" ./src
       chmod +w -R ./src
@@ -133,11 +121,55 @@ mkTest = cabalFile:
       #done < <(find . -type d -name html)
     '';
   };
+*/
+
+testRepo = repo:
+  with rec {
+    # Use cabal2nix to generate a derivation function, then use that function's
+    # arguments to figure out what dependencies we need to include
+    src = latestGit
+    haskellDef  = import (runCabal2nix { url = repo; });
+    haskellArgs = filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+                         (attrNames (functionArgs haskellDef));
+  };
+  stdenv.mkDerivation {
+    name = "cabal-test";
+    src  = latestGit { url = repo; };
+    buildInputs  = [
+      haskellPackages.cabal-install
+      (haskellPackages.ghcWithPackages (h: map (p: h."${p}") haskellArgs))
+    ];
+    buildCommand = ''
+      set -e
+
+      function fail {
+        echo "$*" 1>&2
+        exit 1
+      }
+
+      echo "Making mutable copy of source" 1>&2
+      cp -r "$src" ./src
+      chmod +w -R ./src
+      cd ./src
+
+      echo "Configuring" 1>&2
+      export HOME="$PWD"
+      cabal configure --enable-tests || fail "Failed to configure"
+
+      echo "Testing" 1>&2
+      cabal test || fail "Failed to test"
+
+      echo "Passed" > "$out"
+    '';
+  };
+
 
 test = stdenv.mkDerivation {
   name         = "cabal-tests";
-  buildInputs  = map mkTest cabalFiles;
-  installPhase = ''echo "Pass" > "$out"'';
+  buildInputs  = map testRepo haskellRepos;
+  buildCommand = ''
+    echo "Pass" > "$out"
+  '';
 };
 
 }
