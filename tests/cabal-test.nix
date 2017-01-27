@@ -10,10 +10,10 @@ with {
 rec {
 
 getCabalFiles = stdenv.mkDerivation {
-  name = "cabal-files";
-  repos = map (url: latestGit { inherit url; }) haskellRepos;
-  buildInputs = [ findutils gnused jq ];
-  LOCATE_PATH = getEnv "LOCATE_PATH";
+  name         = "cabal-files";
+  repos        = map (url: latestGit { inherit url; }) haskellRepos;
+  buildInputs  = [ findutils gnused jq ];
+  LOCATE_PATH  = getEnv "LOCATE_PATH";
   buildCommand = ''
     function skip {
       grep -v "/NotMine/"                         |
@@ -27,6 +27,7 @@ getCabalFiles = stdenv.mkDerivation {
     }
 
     function dirs {
+      echo "Looking for Cabal files on disk" 1>&2
       [[ -d /home/chris/Programming ]] || return
       while read -r CBL
       do
@@ -38,11 +39,17 @@ getCabalFiles = stdenv.mkDerivation {
     }
 
     function fromRepos {
+      echo "Looking for Cabal files online" 1>&2
       for REPO in $repos
       do
+        echo "Checking repo $REPO" 1>&2
         for F in "$REPO"/*
         do
-          echo "$F" | grep "\.cabal$" || true
+          if echo "$F" | grep "\.cabal$" > /dev/null
+          then
+            echo "Found $F" 1>&2
+            echo "$F"
+          fi
         done
       done
     }
