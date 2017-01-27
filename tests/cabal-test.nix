@@ -127,14 +127,14 @@ testRepo = repo:
   with rec {
     # Use cabal2nix to generate a derivation function, then use that function's
     # arguments to figure out what dependencies we need to include
-    src = latestGit
-    haskellDef  = import (runCabal2nix { url = repo; });
+    src         = latestGit { url = repo; };
+    haskellDef  = import (runCabal2nix { url = toString src; });
     haskellArgs = filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
                          (attrNames (functionArgs haskellDef));
   };
   stdenv.mkDerivation {
     name = "cabal-test";
-    src  = latestGit { url = repo; };
+    inherit src;
     buildInputs  = [
       haskellPackages.cabal-install
       (haskellPackages.ghcWithPackages (h: map (p: h."${p}") haskellArgs))
