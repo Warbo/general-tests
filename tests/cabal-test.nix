@@ -1,8 +1,13 @@
-with import <nixpkgs> {};
+{ pkgs ? import <nixpkgs> {}, helpers ? {} }:
 with builtins;
+with {
+  inherit (pkgs)
+    bash findutils gnused haskellPackages jq runCabal2nix runCommand
+    sanitiseName stdenv;
+};
+rec {
 
-let
-getProjects = runCommand "projects"
+getCabalFiles = runCommand "get-cabal-files"
   {
     buildInputs = [ findutils gnused jq ];
     LOCATE_PATH = getEnv "LOCATE_PATH";
@@ -22,11 +27,12 @@ getProjects = runCommand "projects"
     }
 
     function dirs {
+      [[ -d /home/chris/Programming ]] || return
       while read -r CBL
       do
         if grep "test-suite" < "$CBL" > /dev/null
         then
-          dirname "$CBL"
+          echo "$CBL"
         fi
       done < <(locate -e "/home/chris/Programming/*.cabal" | skip)
     }
@@ -34,81 +40,81 @@ getProjects = runCommand "projects"
     dirs | grep '^.' | jq -R '.' | jq -s '.' > "$out"
   '';
 
-projects = fromJSON (readFile "${getProjects}");
+cabalFiles = fromJSON (readFile "${getCabalFiles}");
 
-mkTest = dir:
-  let script = writeScript "cabal-test" ''
-  #!${racket}/bin/racket
-  #lang racket
-  (require racket/system)
+mkTest = cabalFile:
+  with rec {
+    dir         = dirOf cabalFile;
 
-  (define dir "${dir}")
+    # Use cabal2nix to generate a derivation function, then use that function's
+    # arguments to figure out what dependencies we need to include
+    haskellDef  = import (runCabal2nix { url  = dir; });
+    haskellArgs = filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+                         (attrNames (functionArgs haskellDef));
 
-  (define cabal
-    (or (find-executable-path "cabal")
-        (error "Couldn't find cabal executable")))
+    # Some Haskell packages will only work with particular versions of GHC
+    version     = if hasSuffix "sample-bench.cabal" cabalFile
+                     then haskell.packages.ghc783
+                     else haskellPackages;
+  };
+  stdenv.mkDerivation {
+    name = "cabal-test-${sanitiseName dir}";
+    src  = filterSource
+             (path: type: !(elem (baseNameOf path)
+                                 [ ".cabal-sandbox" ".git"
+                                   "cabal.sandbox.config" "dist" ]))
+             dir;
+    buildInputs  = [
+      haskellPackages.cabal-install
+      (haskellPackages.ghcWithPackages (h: map (p: h."${p}") haskellArgs))
+    ];
+    buildCommand = ''
+      set -e
 
-  (define tmp
-    (path->string
-      (make-temporary-file "cabal-test-temp-~a" 'directory)))
+      function fail {
+        echo "$*" 1>&2
+        exit 1
+      }
 
-  (define src
-    (string-append tmp "/src"))
+      function runSuite {
+        cabal test "$1" || fail "Failed to run suite $1"
+      }
 
-  (define (run-suite suite)
-    (unless (system* cabal "test" suite)
-      (error "Failed to run suite " suite)))
+      function suitesFrom {
+        tr '[:upper:]' '[:lower:]' < "$1" |
+        grep "test-suite"                 |
+        cut -d ':' -f2                    |
+        sed -e 's/^ *//g'                 |
+        sed -e 's/ *$//g'
+      }
 
-  (define (suites-from cbl)
-    (define test-lines
-      (filter (lambda (line)
-                (string-contains? (string-downcase line) "test-suite"))
-              (file->lines cbl)))
+      echo "Making mutable copy of source" 1>&2
+      cp -r "$src" ./src
+      chmod +w -R ./src
+      cd ./src
 
-    (map (lambda (line)
-           (second (string-split (string-trim line) " ")))
-         test-lines))
+      echo "Configuring" 1>&2
+      export HOME="$PWD"
+      cabal configure --enable-tests || fail "Failed to configure"
 
-  (dynamic-wind
-    (lambda () #f)
-    (lambda ()
-      (copy-directory/files dir src)
+      echo "Testing" 1>&2
+      cabal test || fail "Failed to test"
 
-      (parameterize ([current-directory src])
-        (call-with-exception-handler
-          (lambda (e) #t)
-          (lambda () (delete-directory/files "dist")))
+      echo "Passed" > "$out"
 
-        (eprintf "Configuring\n")
-        (unless (system* "${warbo-utilities}/bin/hsConfig")
-          (error "Failed to configure"))
+      #while read -r HPC
+      #do
+      #  echo "Storing coverage report from '$HPC'"
+      #  mkdir -p ~/Programming/coverage/"$NAME"
+      #  cp -vr "$HPC" ~/Programming/coverage/"$NAME/"
+      #done < <(find . -type d -name html)
+    '';
+  };
 
-        (define cabal-files
-          (find-files (lambda (name)
-                        (string-suffix? (path->string name) ".cabal"))))
-        (eprintf "Found following cabal files: ~a\n" cabal-files)
+test = stdenv.mkDerivation {
+  name         = "cabal-tests";
+  buildInputs  = map mkTest cabalFiles;
+  installPhase = ''echo "Pass" > "$out"'';
+};
 
-        (for-each (lambda (cbl)
-                    (define suites
-                      (suites-from cbl))
-                    (eprintf "Found following test suites: ~a\n" suites)
-
-                    (for-each run-suite suites))
-                  cabal-files)))
-    (lambda ()
-      (delete-directory/files tmp)))
-
-  ;;while read -r HPC
-  ;;do
-  ;;  echo "Storing coverage report from '$HPC'"
-  ;;  mkdir -p ~/Programming/coverage/"$NAME"
-  ;;  cp -vr "$HPC" ~/Programming/coverage/"$NAME/"
-  ;;done < <(find . -type d -name html)
-'';
-in runCommand "wrap-script" { buildInputs = [ makeWrapper ]; } ''
-  #!${bash}/bin/bash
-  makeWrapper "${script}" "$out" \
-    --prefix PATH : "${haskellPackages.cabal-install}/bin"
-'';
-
-in listToAttrs (map (p: { name = toString p; value = mkTest p; }) projects)
+}

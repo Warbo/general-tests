@@ -1,26 +1,12 @@
-with import <nixpkgs> {};
-with lib;
+{ pkgs ? import <nixpkgs> {} }:
 with builtins;
 
 with rec {
-
-  pathSafe = replaceStrings ["/"] ["_"];
-
-  defs     = mapAttrs (n: _: import (./tests + "/${n}"))
-                      (readDir ./tests);
-
-  tests    = listToAttrs
-               (concatMap (def: map (test: rec {
-                                      name  = pathSafe "${def}.${test}";
-                                      value = rec {
-                                        script = defs."${def}"."${test}";
-                                        pass   = (readDir ./results/pass) ? name;
-                                        drv    = script.drvPath;
-                                      };
-                                    })
-                                    (attrNames defs."${def}"))
-                          (attrNames defs));
-
+  # Use this for helper functions, etc. common to many tests
+  helpers = rec {
+    haskellRepos = [
+    ];
+  };
 };
-
-tests
+map (n: import (./tests + "/${n}") { inherit helpers pkgs; })
+    (attrNames (readDir ./tests))
