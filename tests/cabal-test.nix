@@ -2,19 +2,19 @@
 with builtins;
 with {
   inherit (pkgs)
-    bash findutils gnused haskellPackages jq runCabal2nix runCommand
+    bash findutils gnused haskellPackages jq latestGit runCabal2nix runCommand
     sanitiseName stdenv;
+  inherit (helpers)
+    haskellRepos;
 };
 rec {
 
-getCabalFiles = runCommand "get-cabal-files"
-  {
-    buildInputs = [ findutils gnused jq ];
-    LOCATE_PATH = getEnv "LOCATE_PATH";
-  }
-  ''
-    #!${bash}/bin/bash
-
+getCabalFiles = stdenv.mkDerivation {
+  name = "cabal-files";
+  repos = map (url: latestGit { inherit url; }) haskellRepos;
+  buildInputs = [ findutils gnused jq ];
+  LOCATE_PATH = getEnv "LOCATE_PATH";
+  buildCommand = ''
     function skip {
       grep -v "/NotMine/"                         |
       grep -v "/git-html/"                        |
@@ -37,8 +37,24 @@ getCabalFiles = runCommand "get-cabal-files"
       done < <(locate -e "/home/chris/Programming/*.cabal" | skip)
     }
 
-    dirs | grep '^.' | jq -R '.' | jq -s '.' > "$out"
+    function fromRepos {
+      for REPO in $repos
+      do
+        for F in "$REPO"/*
+        do
+          echo "$F" | grep "\.cabal$" || true
+        done
+      done
+    }
+
+    function cabalFiles {
+      dirs
+      fromRepos
+    }
+
+    cabalFiles | grep '^.' | jq -R '.' | jq -s '.' > "$out"
   '';
+};
 
 cabalFiles = fromJSON (readFile "${getCabalFiles}");
 
