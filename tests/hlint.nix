@@ -2,47 +2,62 @@
 with builtins;
 with {
   inherit (pkgs)
-    bash findutils gnused haskellPackages jq runCommand sanitiseName stdenv;
+    bash findutils gnused haskellPackages jq latestGit runCommand sanitiseName
+    stdenv;
+  inherit (helpers)
+    haskellRepos;
 };
 
 rec {
 
-getProjects = runCommand "projects"
-  {
-    buildInputs = [ findutils gnused jq ];
-    LOCATE_PATH = getEnv "LOCATE_PATH";
-  }
-  ''
-    #!${bash}/bin/bash
-    shopt -s nullglob
-
-    {
-      # Standalone Haskell files
-      DIR="~/Programming/Haskell/"
-      echo "$DIR"*.hs
-      echo "$DIR"*.lhs
-
-      # Project directories
-      "${../helpers/my_haskell.sh}"    |
-        grep -v "/Haskell/quickcheck$" |
-        grep -v "/Haskell/imm$"        |
-        grep -v "/Haskell/ifcxt$"
-    } | grep "^." | jq -R '.' | jq -s '.' > "$out"
-  '';
-
-projects = fromJSON (readFile "${getProjects}");
-
-mkTest = project: stdenv.mkDerivation {
-  name         = "hlint-test-${sanitiseName project}";
-  buildInputs  = [ haskellPackages.hlint ];
+getProjects = stdenv.mkDerivation {
+  name         = "projects";
+  LOCATE_PATH  = getEnv "LOCATE_PATH";
+  buildInputs  = [ findutils gnused jq ];
   buildCommand = ''
-    hlint -XNoCPP "--ignore=Parse error" "${project}" && echo "Passed" > "$out"
+    shopt -s nullglob
+    {
+      if [[ -d /home/chris/Programming ]]
+      then
+        # Standalone Haskell files
+        DIR="/home/chris/Programming/Haskell/"
+        echo "$DIR"*.hs
+        echo "$DIR"*.lhs
+
+        # Project directories
+        "${../helpers/my_haskell.sh}"    |
+          grep -v "/Haskell/quickcheck$" |
+          grep -v "/Haskell/imm$"        |
+          grep -v "/Haskell/ifcxt$"
+      fi
+    } | grep "^." | jq -R '.' | jq -s '.' > "$out"
   '';
 };
 
+projects = fromJSON (readFile "${getProjects}");
+
+testCommand = ''
+  hlint -XNoCPP "--ignore=Parse error" "$src" && echo "Passed" > "$out"
+'';
+
+mkTest = src: stdenv.mkDerivation {
+  inherit src;
+  name         = "hlint-test-${sanitiseName src}";
+  buildInputs  = [ haskellPackages.hlint ];
+  buildCommand = testCommand;
+};
+
+testRepo = url:
+  stdenv.mkDerivation {
+    name         = "test-repo";
+    src          = latestGit { inherit url; };
+    buildInputs  = [ haskellPackages.hlint ];
+    buildCommand = testCommand;
+  };
+
 test = stdenv.mkDerivation {
   name         = "hlint-tests";
-  buildInputs  = map mkTest projects;
+  buildInputs  = (map mkTest projects) ++ (map testRepo haskellRepos);
   buildCommand = ''echo "Passed" > "$out"'';
 };
 
