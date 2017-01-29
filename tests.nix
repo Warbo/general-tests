@@ -2,6 +2,9 @@
 with builtins;
 
 with rec {
+  inherit (pkgs)
+    latestGit;
+
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
     haskellRepos = map (r: "http://chriswarbo.net/git/${r}.git") [
