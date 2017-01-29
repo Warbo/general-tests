@@ -14,6 +14,8 @@ getProjects = stdenv.mkDerivation {
   name         = "projects";
   buildInputs  = [ findutils gnused jq ];
   buildCommand = ''
+    echo '[]' > "$out"
+    exit 0
     shopt -s nullglob
     echo "[" >> "$out"
 
