@@ -12,7 +12,6 @@ rec {
 
 getProjects = stdenv.mkDerivation {
   name         = "projects";
-  LOCATE_PATH  = getEnv "LOCATE_PATH";
   buildInputs  = [ findutils gnused jq ];
   buildCommand = ''
     shopt -s nullglob
@@ -26,7 +25,7 @@ getProjects = stdenv.mkDerivation {
       #echo "$DIR"*.lhs
       true
       # Project directories
-      #"$../helpers/my_haskell.sh"    |
+      #LOCATE_PATH=/var/cache/locatedb "$../helpers/my_haskell.sh"    |
       #  grep -v "/Haskell/quickcheck$" |
       #  grep -v "/Haskell/imm$"        |
       #  grep -v "/Haskell/ifcxt$"
