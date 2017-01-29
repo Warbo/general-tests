@@ -16,21 +16,22 @@ getProjects = stdenv.mkDerivation {
   buildInputs  = [ findutils gnused jq ];
   buildCommand = ''
     shopt -s nullglob
-    {
-      if [[ -d /home/chris/Programming ]]
-      then
-        # Standalone Haskell files
-        DIR="/home/chris/Programming/Haskell/"
-        echo "$DIR"*.hs
-        echo "$DIR"*.lhs
+    echo "[" >> "$out"
 
-        # Project directories
-        "${../helpers/my_haskell.sh}"    |
-          grep -v "/Haskell/quickcheck$" |
-          grep -v "/Haskell/imm$"        |
-          grep -v "/Haskell/ifcxt$"
-      fi
-    } | grep "^." | jq -R '.' | jq -s '.' > "$out"
+    if [[ -d /home/chris/Programming ]]
+    then
+      # Standalone Haskell files
+      DIR="/home/chris/Programming/Haskell/"
+      echo "$DIR"*.hs
+      echo "$DIR"*.lhs
+
+      # Project directories
+      "${../helpers/my_haskell.sh}"    |
+        grep -v "/Haskell/quickcheck$" |
+        grep -v "/Haskell/imm$"        |
+        grep -v "/Haskell/ifcxt$"
+    fi
+    echo "]" >> "$out"
   '';
 };
 
