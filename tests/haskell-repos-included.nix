@@ -82,7 +82,7 @@ rec {
         }
       done < "$repos"
 
-      echo "Passed" > "$out"
+      touch "$out"
     '';
   };
 }

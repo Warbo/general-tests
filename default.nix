@@ -24,8 +24,8 @@ with newPkgs;
 with lib;
 
 stdenv.mkDerivation {
-  name = "tests";
-  src  = ./.;
+  name         = "tests";
+  src          = ./.;
   buildInputs  = map (t: t.test) (import ./tests.nix { pkgs = newPkgs; });
   buildCommand = ''
     echo "Passed" > "$out"

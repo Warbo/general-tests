@@ -15,4 +15,5 @@ with rec {
   };
 };
 map (n: import (./tests + "/${n}") { inherit helpers pkgs; })
-    (attrNames (readDir ./tests))
+    (filter (n: elem n ["haskell-repos-included.nix"])
+            (attrNames (readDir ./tests)))
