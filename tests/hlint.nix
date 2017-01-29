@@ -51,17 +51,17 @@ mkTest = src: stdenv.mkDerivation {
   buildCommand = testCommand;
 };
 
-testRepo = url:
+testRepo = src:
   stdenv.mkDerivation {
+    inherit src;
     name         = "test-repo";
-    src          = latestGit { inherit url; };
     buildInputs  = [ haskellPackages.hlint ];
     buildCommand = testCommand;
   };
 
 test = stdenv.mkDerivation {
   name         = "hlint-tests";
-  buildInputs  = (map mkTest projects) ++ (map testRepo haskellRepos);
+  buildInputs  = (map mkTest projects) ++ (map testRepo haskellSources);
   buildCommand = ''echo "Passed" > "$out"'';
 };
 

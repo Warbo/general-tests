@@ -12,6 +12,7 @@ with rec {
       "quickspec" "reduce-equations" "runtime-arbitrary-tests" "sample-bench"
       "tree-features" "type-parser"
     ];
+    haskellSources = map (url: latestGit { inherit url; }) haskellRepos;
   };
 };
 map (n: import (./tests + "/${n}") { inherit helpers pkgs; })
