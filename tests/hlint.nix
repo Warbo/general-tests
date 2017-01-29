@@ -21,21 +21,23 @@ getProjects = stdenv.mkDerivation {
     if [[ -d /home/chris/Programming ]]
     then
       # Standalone Haskell files
-      DIR="/home/chris/Programming/Haskell/"
-      echo "$DIR"*.hs
-      echo "$DIR"*.lhs
-
+      #DIR="/home/chris/Programming/Haskell/"
+      #echo "$DIR"*.hs
+      #echo "$DIR"*.lhs
+      true
       # Project directories
-      "${../helpers/my_haskell.sh}"    |
-        grep -v "/Haskell/quickcheck$" |
-        grep -v "/Haskell/imm$"        |
-        grep -v "/Haskell/ifcxt$"
+      #"$../helpers/my_haskell.sh"    |
+      #  grep -v "/Haskell/quickcheck$" |
+      #  grep -v "/Haskell/imm$"        |
+      #  grep -v "/Haskell/ifcxt$"
+    else
+      echo "No projects on disk" 1>&2
     fi
     echo "]" >> "$out"
   '';
 };
 
-projects = fromJSON (readFile "${getProjects}");
+projects = import "${getProjects}";
 
 testCommand = ''
   hlint -XNoCPP "--ignore=Parse error" "$src" && echo "Passed" > "$out"
