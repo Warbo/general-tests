@@ -19,6 +19,4 @@ with rec {
   # Use the old overrides to get the latest version of the overrides
   newPkgs = pkgsWith (oldOverriddenPkgs.latestGit { url = configUrl; });
 };
-{
-  tests = import ./. { pkgs = newPkgs; };
-}
+import ./tests.nix { pkgs = newPkgs; }

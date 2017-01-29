@@ -1,12 +1,14 @@
 { pkgs ? import <nixpkgs> {} }:
 with {
   inherit (pkgs)
-    stdenv;
+    lib stdenv;
 };
+with lib;
 
 stdenv.mkDerivation {
   name         = "tests";
-  buildInputs  = map (t: t.test) (import ./tests.nix { pkgs = pkgs; });
+  buildInputs  = map (t: t.test)
+                     (attrValues (import ./tests.nix { pkgs = pkgs; }));
   buildCommand = ''
     echo "Passed" > "$out"
   '';

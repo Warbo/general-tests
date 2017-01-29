@@ -3,7 +3,7 @@ with builtins;
 
 with rec {
   inherit (pkgs)
-    latestGit;
+    latestGit lib;
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
@@ -18,5 +18,6 @@ with rec {
     haskellSources = map (url: latestGit { inherit url; }) haskellRepos;
   };
 };
-map (n: import (./tests + "/${n}") { inherit helpers pkgs; })
-    (attrNames (readDir ./tests))
+with lib;
+mapAttrs (n: _: import (./tests + "/${n}") { inherit helpers pkgs; })
+         (readDir ./tests)
