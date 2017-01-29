@@ -46,7 +46,7 @@ testCommand = ''
 
 mkTest = src: stdenv.mkDerivation {
   inherit src;
-  name         = "hlint-test-${sanitiseName src}";
+  name         = "hlint-test";
   buildInputs  = [ haskellPackages.hlint ];
   buildCommand = testCommand;
 };
