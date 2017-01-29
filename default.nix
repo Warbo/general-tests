@@ -22,10 +22,11 @@ with rec {
 with newPkgs;
 with lib;
 
-stdenv.mkDerivation {
+/*stdenv.mkDerivation {
   name         = "tests";
   buildInputs  = map (t: t.test) (import ./tests.nix { pkgs = newPkgs; });
   buildCommand = ''
     echo "Passed" > "$out"
   '';
-}
+}*/
+newPkgs.bash
