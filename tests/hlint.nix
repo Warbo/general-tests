@@ -5,7 +5,7 @@ with {
     bash findutils gnused haskellPackages jq latestGit runCommand sanitiseName
     stdenv;
   inherit (helpers)
-    haskellRepos;
+    haskellSources;
 };
 
 rec {
