@@ -3,7 +3,10 @@
 with builtins;
 with rec {
   inherit (pkgs)
-    bash jq latestGit stdenv;
+    bash jq latestGit lib stdenv;
+
+  inherit (lib)
+    attrByPath splitString;
 
   packages = stdenv.mkDerivation {
     name = "custom-packages";
@@ -38,7 +41,7 @@ with rec {
         for FILE in "$src"/custom/*.nix
         do
           BASE=$(basename "$FILE" .nix)
-          [[ -d "$BASE" ]] || echo "$FILE"
+          [[ -d "$src/custom/$BASE" ]] || echo "$BASE"
         done
       } | jq -R '.' >> "$out"
       echo "]" >> "$out"
@@ -46,18 +49,28 @@ with rec {
   };
 
   buildPkg = given:
-    with { pkg = pkgs."${given}"; };
-    stdenv.mkDerivation {
-      name = "check-pkg";
-      buildInputs = [(if typeOf pkg != "set"
-                         then bash
-                         else if pkg ? executable && pkg.executable
-                                 then bash
-                                 else if pkg ? src
-                                         then pkg
-                                         else if pkg ? buildCommand
-                                                 then pkg
-                                                 else bash)];
+    with rec {
+      # Look up attribute in pkgs
+      found = attrByPath (splitString "." given)
+                         (abort "Couldn't find ${given}")
+                         pkgs;
+
+      # If we found a package, use it; otherwise use nothing
+      deps  = if typeOf found != "set"
+                 then []  # Packages must be sets
+                 else if found ? "bash"
+                      then []  # Don't build the whole of nixpkgs
+                      else if found ? executable && found.executable
+                           then []  # Probably a script
+                           else if found ? src
+                                then [ found ]  # Probably a package
+                                else if found ? buildCommand
+                                        then [ found ]  # Probably a package
+                                        else [];        # Probably not a package
+    };
+    trace given stdenv.mkDerivation {
+      name         = "check-pkg";
+      buildInputs  = deps;
       buildCommand = ''touch "$out"'';
     };
 };
