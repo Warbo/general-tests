@@ -10,7 +10,7 @@ with {
     fold;
 };
 
-rec {
+with rec {
   getRepos = stdenv.mkDerivation {
     name         = "haskell-repos";
     buildInputs  = [ wget ];
