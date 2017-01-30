@@ -8,7 +8,7 @@ with {
     haskellSources;
 };
 
-rec {
+with rec {
 
 getProjects = stdenv.mkDerivation {
   name         = "projects";
