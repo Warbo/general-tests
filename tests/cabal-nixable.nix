@@ -1,32 +1,34 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p haskellPackages.cabal-install
+{ pkgs, helpers }:
 
-function data {
-    while read -r PROJECT
-    do
-        find "$PROJECT" -maxdepth 1 -name "*.cabal"
-    done < <(./helpers/my_haskell.sh)
+with rec {
+  inherit (helpers)
+    haskellSources;
+
+  inherit (pkgs)
+    haskellPackages stdenv;
+
+  configurePkg = src:
+    stdenv.mkDerivation {
+      inherit src;
+      name         = "configure-package";
+      buildInputs  = [ haskellPackages.cabal-install haskellPackages.ghc ];
+      buildCommand = ''
+        set -e
+        cp -r "$src" ./src
+        chmod +w -R ./src
+        cd ./src
+        export HOME="$PWD"
+        cabal update
+        cabal sandbox init
+        cabal install   --enable-tests --dependencies-only
+        cabal configure --enable-tests
+        cabal build
+        touch "$out"
+      '';
+    };
+};
+stdenv.mkDerivation {
+  name         = "cabal-nixable";
+  buildInputs  = map configurePkg haskellSources;
+  buildCommand = ''touch "$out"'';
 }
-
-function cached {
-    ./helpers/cache.sh "cabal-nixable" < <(data)
-}
-
-cached > /dev/null
-
-# Check how we were called
-if NAME=$(./helpers/getName.sh "$0")
-then
-    LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || exit 1
-    while read -r LINE
-    do
-        echo "Trying $LINE"
-        DIR=$(dirname "$LINE")
-        pushd "$DIR"
-        cabal clean
-        hsConfig || exit 1
-        popd
-    done < <(echo "$LINES")
-else
-    ./helpers/namesMatch.sh "cabal-nixable" < <(cached) || exit 1
-fi
