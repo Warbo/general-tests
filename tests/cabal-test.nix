@@ -162,14 +162,12 @@ testRepo = repo:
       echo "Passed" > "$out"
     '';
   };
+};
 
-
-test = stdenv.mkDerivation {
+stdenv.mkDerivation {
   name         = "cabal-tests";
   buildInputs  = map testRepo haskellRepos;
   buildCommand = ''
     echo "Pass" > "$out"
   '';
-};
-
 }

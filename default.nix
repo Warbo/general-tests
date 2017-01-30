@@ -7,8 +7,7 @@ with lib;
 
 stdenv.mkDerivation {
   name         = "tests";
-  buildInputs  = map (t: t.test)
-                     (attrValues (import ./tests.nix { pkgs = pkgs; }));
+  buildInputs  = attrValues (import ./tests.nix { pkgs = pkgs; });
   buildCommand = ''
     echo "Passed" > "$out"
   '';

@@ -56,11 +56,9 @@ testRepo = src:
     buildInputs  = [ haskellPackages.hlint ];
     buildCommand = testCommand;
   };
-
-test = stdenv.mkDerivation {
+};
+stdenv.mkDerivation {
   name         = "hlint-tests";
   buildInputs  = (map mkTest projects) ++ (map testRepo haskellSources);
   buildCommand = ''echo "Passed" > "$out"'';
-};
-
 }

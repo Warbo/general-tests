@@ -46,43 +46,41 @@ rec {
   nonHaskellRepos = map (r: "http://chriswarbo.net/git/${r}.git") [
     "haskell-te" "isahipster" "writing"
   ];
+};
+assert fold (repo: _: if elem repo haskellRepos
+                         then error "'${repo}' shouldn't be in haskellRepos"
+                         else true)
+            true
+            nonHaskellRepos;
+stdenv.mkDerivation {
+  name  = "haskell-repos-included";
+  repos = getRepos;
+  given = haskellRepos ++ nonHaskellRepos;
+  buildCommand = ''
+    for REPO in $given
+    do
+      grep -Fx "$REPO" < "$repos" || {
+        echo "Given repo '$REPO', but didn't find it online" 1>&2
+        exit 1
+      }
+    done
 
-  test = assert fold (repo: _:
-                       if elem repo haskellRepos
-                          then error "'${repo}' shouldn't be in haskellRepos"
-                          else true)
-                     true
-                     nonHaskellRepos;
-  stdenv.mkDerivation {
-    name  = "haskell-repos-included";
-    repos = getRepos;
-    given = haskellRepos ++ nonHaskellRepos;
-    buildCommand = ''
-      for REPO in $given
+    while read -r REPO
+    do
+      FOUND=0
+      for GIVEN in $given
       do
-        grep -Fx "$REPO" < "$repos" || {
-          echo "Given repo '$REPO', but didn't find it online" 1>&2
-          exit 1
-        }
+        if [[ "x$GIVEN" = "x$REPO" ]]
+        then
+          FOUND=1
+        fi
       done
+      [[ "$FOUND" -eq 1 ]] || {
+        echo "Found '$REPO' online, but wasn't given" 1>&2
+        exit 1
+      }
+    done < "$repos"
 
-      while read -r REPO
-      do
-        FOUND=0
-        for GIVEN in $given
-        do
-          if [[ "x$GIVEN" = "x$REPO" ]]
-          then
-            FOUND=1
-          fi
-        done
-        [[ "$FOUND" -eq 1 ]] || {
-          echo "Found '$REPO' online, but wasn't given" 1>&2
-          exit 1
-        }
-      done < "$repos"
-
-      touch "$out"
-    '';
-  };
+    touch "$out"
+  '';
 }
