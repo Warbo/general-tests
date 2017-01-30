@@ -7,7 +7,7 @@ with {
   inherit (helpers)
     haskellRepos;
 };
-rec {
+with rec {
 /*
 getCabalFiles = stdenv.mkDerivation {
   name         = "cabal-files";
