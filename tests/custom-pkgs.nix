@@ -8,6 +8,9 @@ with rec {
   inherit (lib)
     attrByPath splitString;
 
+  inherit (helpers)
+    combineTests;
+
   packages = stdenv.mkDerivation {
     name = "custom-packages";
     src  = latestGit {
