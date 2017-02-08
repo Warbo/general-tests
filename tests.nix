@@ -7,15 +7,25 @@ with rec {
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
-    haskellRepos = map (r: "http://chriswarbo.net/git/${r}.git") [
-      "arbitrary-haskell" "ast-plugin" "get-deps" "hipspec" "hs2ast-tests"
-      "hs2ast" "ifcxt" "k-means" "lazy-lambda-calculus" "lazy-smallcheck-2012"
-      "ml4hs-helper" "ml4hsfe" "mlspec-bench" "mlspec-helper" "mlspec"
-      "nix-eval" "order-deps" "panhandle" "panpipe" "quickspec-measure"
-      "quickspec" "reduce-equations" "runtime-arbitrary-tests" "sample-bench"
-      "tree-features" "type-parser"
+    getGit = url: latestGit { inherit url; };
+
+    repoOf = r: "http://chriswarbo.net/git/${r}.git";
+
+    haskellRepos = map repoOf (myHaskell ++ notMyHaskell);
+
+    haskellSources = map getGit haskellRepos;
+
+    myHaskell = [
+      "arbitrary-haskell" "ast-plugin" "get-deps" "hs2ast-tests" "hs2ast"
+      "k-means" "lazy-lambda-calculus" "ml4hs-helper" "ml4hsfe" "mlspec-bench"
+      "mlspec-helper" "mlspec" "nix-eval" "order-deps" "panhandle" "panpipe"
+      "quickspec-measure" "reduce-equations" "runtime-arbitrary-tests"
+      "sample-bench" "tree-features" "type-parser"
     ];
-    haskellSources = map (url: latestGit { inherit url; }) haskellRepos;
+
+    notMyHaskell = [
+      "hipspec" "ifcxt" "lazy-smallcheck-2012" "quickspec"
+    ];
   };
 };
 with lib;
