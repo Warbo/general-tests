@@ -52,7 +52,8 @@ assert fold (repo: _: if elem repo haskellRepos
                          else true)
             true
             nonHaskellRepos;
-stdenv.mkDerivation {
+{
+test = stdenv.mkDerivation {
   name  = "haskell-repos-included";
   repos = getRepos;
   given = haskellRepos ++ nonHaskellRepos;
@@ -83,4 +84,5 @@ stdenv.mkDerivation {
 
     touch "$out"
   '';
+};
 }

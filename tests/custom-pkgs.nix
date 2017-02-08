@@ -73,10 +73,12 @@ with rec {
       buildInputs  = deps;
       buildCommand = ''touch "$out"'';
     };
+
+  tests = listToAttrs (map (p: {
+                             name = p;
+                             value = buildPkg p;
+                           })
+                           (import "${packages}"));
 };
 
-stdenv.mkDerivation {
-  name         = "custom-pkg-test";
-  buildInputs  = map buildPkg (import "${packages}");
-  buildCommand = ''touch "$out"'';
-}
+combineTests "custom-pkg-test" tests

@@ -1,8 +1,9 @@
 { pkgs, helpers }:
 
+with builtins;
 with rec {
   inherit (helpers)
-    haskellSources;
+    allHaskell combineTests getGit haskellSources repoOf;
 
   inherit (pkgs)
     haskellPackages stdenv;
@@ -26,9 +27,12 @@ with rec {
         touch "$out"
       '';
     };
+
+  tests = listToAttrs (map (name: {
+                             inherit name;
+                             value = configurePkg (getGit (repoOf name));
+                           })
+                           allHaskell);
 };
-stdenv.mkDerivation {
-  name         = "cabal-nixable";
-  buildInputs  = map configurePkg haskellSources;
-  buildCommand = ''touch "$out"'';
-}
+
+combineTests "cabal-nixable" tests

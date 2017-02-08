@@ -5,7 +5,7 @@ with {
     bash /*findutils*/ gnused haskellPackages jq latestGit runCabal2nix runCommand
     sanitiseName stdenv;
   inherit (helpers)
-    haskellRepos;
+    allHaskell combineTests haskellRepos repoOf;
 };
 with rec {
 /*
@@ -162,12 +162,12 @@ testRepo = repo:
       echo "Passed" > "$out"
     '';
   };
+
+tests = listToAttrs (map (name: {
+                           inherit name;
+                           value = testRepo (repoOf name);
+                         })
+                         allHaskell);
 };
 
-stdenv.mkDerivation {
-  name         = "cabal-tests";
-  buildInputs  = map testRepo haskellRepos;
-  buildCommand = ''
-    echo "Pass" > "$out"
-  '';
-}
+combineTests "cabal-tests" tests

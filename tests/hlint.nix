@@ -5,7 +5,7 @@ with {
     bash findutils gnused haskellPackages jq latestGit runCommand sanitiseName
     stdenv;
   inherit (helpers)
-    getGit repoOf myHaskell;
+    combineTests getGit repoOf myHaskell;
 };
 
 with rec {
@@ -56,10 +56,17 @@ testRepo = src:
     buildInputs  = [ haskellPackages.hlint ];
     buildCommand = testCommand;
   };
+
+tests = listToAttrs ((map (name: {
+                            inherit name;
+                            value = mkTest name;
+                          })
+                          projects) ++
+                     (map (name: {
+                            inherit name;
+                            value = testRepo (getGit (repoOf name));
+                          })
+                          myHaskell));
 };
-stdenv.mkDerivation {
-  name         = "hlint-tests";
-  buildInputs  = (map mkTest projects) ++ (map (r: testRepo (getGit (repoOf r)))
-                                               myHaskell);
-  buildCommand = ''echo "Passed" > "$out"'';
-}
+
+combineTests "hlint-tests" tests
