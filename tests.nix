@@ -42,5 +42,8 @@ with rec {
   };
 };
 with lib;
-mapAttrs (n: _: import (./tests + "/${n}") { inherit helpers pkgs; })
-         (readDir ./tests)
+listToAttrs (map (f: {
+                   name  = removeSuffix ".nix" f;
+                   value = import (./tests + "/${f}") { inherit helpers pkgs; };
+                 })
+                 (attrNames (readDir ./tests)))
