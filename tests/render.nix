@@ -1,28 +1,27 @@
-#!/usr/bin/env bash
+{ pkgs, helpers }:
 
-function data {
-    locate -e "/home/chris/Writing/*/render.sh"
+with {
+  inherit (pkgs)
+    stdenv;
+
+  inherit (helpers)
+    getGit repoOf;
 }
-
-function cached {
-    ./helpers/cache.sh "render" < <(data)
+{
+  test = stdenv.mkDerivation {
+           name = "writing";
+           src  = getGit (repoOf "writing");
+           buildCommand = ''
+             while read -r SCRIPT
+             do
+               DIR=$(dirname "$SCRIPT")
+               pushd "$DIR"
+               ./render.sh || {
+                 echo "$SCRIPT failed" 1>&2
+                 exit 1
+               }
+               popd
+             done < <(find "$src" -name "render.sh")
+           '';
+         };
 }
-
-cached > /dev/null
-
-if NAME=$(./helpers/getName.sh "$0")
-then
-    LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || exit 1
-    while read -r SCRIPT
-    do
-        DIR=$(dirname "$SCRIPT")
-        pushd "$DIR"
-        if ! ./render.sh
-        then
-            echo "$SCRIPT failed" 1>&2
-            exit 1
-        fi
-    done < <(echo "$LINES")
-else
-    ./helpers/namesMatch.sh "render" < <(cached) || exit 1
-fi
