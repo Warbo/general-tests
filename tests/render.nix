@@ -1,12 +1,13 @@
 { pkgs, helpers }:
 
-rec {
+with rec {
   inherit (pkgs)
     stdenv;
 
   inherit (helpers)
     findRepo;
-
+};
+{
   test = stdenv.mkDerivation {
            name = "writing";
            src  = findRepo "writing" <writing>;
