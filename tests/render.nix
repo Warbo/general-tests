@@ -6,7 +6,7 @@ with {
 
   inherit (helpers)
     getGit repoOf;
-}
+};
 {
   test = stdenv.mkDerivation {
            name = "writing";
