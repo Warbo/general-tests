@@ -6,7 +6,7 @@ with rec {
     haskellPackages latestGit lib runCabal2nix stdenv;
 
   inherit (lib)
-    concatStringsSep;
+    concatStringsSep mapAttrs;
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
@@ -20,7 +20,7 @@ with rec {
 
     allHaskell = myHaskell // notMyHaskell;
 
-    myHaskell = {
+    myHaskell = mapAttrs (_: toString) {
       arbitrary-haskell       = <arbitrary-haskell>;
       ast-plugin              = <ast-plugin>;
       get-deps                = <get-deps>;
@@ -45,7 +45,7 @@ with rec {
       type-parser             = <type-parser>;
     };
 
-    notMyHaskell = {
+    notMyHaskell = mapAttrs (_: toString) {
       hipspec              = <hipspec>;
       ifcxt                = <ifcxt>;
       lazy-smallcheck-2012 = <lazy-smallcheck-2012>;
