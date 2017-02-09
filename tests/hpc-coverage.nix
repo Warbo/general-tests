@@ -1,50 +1,43 @@
-#!/usr/bin/env bash
+{ pkgs, helpers }:
 
-shopt -s nullglob
+with rec {
+  inherit (pkgs)
+    xidel;
 
-# Coverage below this percentage will cause a failure
-MINIMUM=30
+  testRepo = repo:
+    stdenv.mkDerivation {
+      name         = "haskell-coverage";
+      results      = compileHaskell repo "coverage";
+      buildInputs  = [ xidel ];
+      MINIMUM      = "30";  # Coverage below this % will cause a failure
+      buildCommand = ''
+        shopt -s nullglob
+        FOUND=0
+        while read -r HTML
+        do
+            FOUND=1
+            TOTAL='th[contains(text(),"Program Coverage Total")]'
+            PERCENT='following-sibling::td[1]/text()'
+            RAW=$(xidel - --extract "//$TOTAL/$PERCENT" < "$HTML")
+            RESULT=$(echo "$RAW" | tr -d '%')
+            echo "File '$HTML' has coverage '$RAW'"
+            if echo "$RESULT" | grep "[^0-9]" > /dev/null
+            then
+                # 0 shows up as "-", so fix it
+                echo "Percentage looks non-numeric; assuming 0"
+                RESULT=0
+            fi
+            if [[ "$RESULT" -lt "$MINIMUM" ]]
+            then
+                echo "'$RESULT' coverage for '$HTML'" 1>&2
+                exit 1
+            fi
+        done < <(find "$results" -name "hpc_index.html")
 
-function skip {
-    cat
+        [[ "$FOUND" -eq 1 ]] || {
+          echo "Found no coverage report" 1>&2
+          exit 1
+        }
+      '';
+    };
 }
-
-function data {
-    # When a test suite passes, it should store its coverage report here
-    find ~/Programming/coverage -name "hpc_index.html" | skip
-}
-
-function cached {
-    ./helpers/cache.sh "hpc-coverage" < <(data) | skip
-}
-
-# Prime the cache
-cached > /dev/null
-mkdir -p ~/Programming/coverage
-
-# Check how we were called
-if NAME=$(./helpers/getName.sh "$0")
-then
-    LINES=$(./helpers/checkNames.sh "$NAME" < <(cached)) || exit 1
-    while read -r LINE
-    do
-        TOTAL='th[contains(text(),"Program Coverage Total")]'
-        PERCENT='following-sibling::td[1]/text()'
-        RAW=$(xidel - --extract "//${TOTAL}/${PERCENT}" < "$LINE")
-        RESULT=$(echo "$RAW" | tr -d '%')
-        echo "File '$LINE' has coverage '$RAW'"
-        if echo "$RESULT" | grep "[^0-9]" > /dev/null
-        then
-            # 0 shows up as "-", so fix it
-            echo "Percentage looks non-numeric; assuming 0"
-            RESULT=0
-        fi
-        if [[ "$RESULT" -lt "$MINIMUM" ]]
-        then
-            echo "'$RESULT' coverage for '$LINE'" 1>&2
-            exit 1
-        fi
-    done < <(echo "$LINES")
-else
-    ./helpers/namesMatch.sh "hpc-coverage" < <(cached) || exit 1
-fi

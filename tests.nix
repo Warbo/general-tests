@@ -29,6 +29,69 @@ with rec {
       "hipspec" "ifcxt" "lazy-smallcheck-2012" "quickspec"
     ];
 
+    haskellSrcDeps = repo:
+      # Use cabal2nix to generate a derivation function, then use that
+      # function's arguments to figure out what dependencies we need to include
+      src         = getGit repo;
+      haskellDef  = import (runCabal2nix { url = toString src; });
+      haskellArgs = filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+                           (attrNames (functionArgs haskellDef));
+
+    # Sets up an environment to build a Haskell package from the given repo.
+    # The step should be one of "configure", "build", "test" or "coverage",
+    # which lets us stop early, e.g. "build" will stop after building.
+    compileHaskell = repo: step:
+      stdenv.mkDerivation {
+        inherit step;
+        name = "haskell-${step}";
+        src  = getGit repo;
+        buildInputs  = [
+          haskellPackages.cabal-install
+          (haskellPackages.ghcWithPackages (h: map (p: h."${p}")
+                                                   (haskellSrcDeps repo)))
+        ];
+        configFlags  = concatStringsSep " " [
+          (if step == "coverage"
+              then "--enable-coverage"
+              else "")
+          (if elem step ["test" "coverage"]
+              then "--enable-tests"
+              else "")
+        ];
+        buildCommand = ''
+          set -e
+
+          function fail {
+            echo "$*" 1>&2
+            exit 1
+          }
+
+          function succeed {
+            cp -r . "$out"
+            exit
+          }
+
+          echo "Making mutable copy of source" 1>&2
+          cp -r "$src" ./src
+          chmod +w -R ./src
+          cd ./src
+
+          echo "Configuring" 1>&2
+          export HOME="$PWD"
+          cabal configure ${concatStriconfigFlags} || fail "Failed to configure"
+          [[ "x$step" = "xconfigure" ]] && succeed
+
+          echo "Building" 1>&2
+          cabal build || fail "Failed to build"
+          [[ "x$step" = "xbuild" ]] && succeed
+
+          echo "Testing" 1>&2
+          cabal test || fail "Failed to test"
+          succeed
+        '';
+      };
+
+
     combineTests = name: tests:
       tests // {
         test = stdenv.mkDerivation {
