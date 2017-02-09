@@ -9,13 +9,11 @@ with rec {
     attrByPath splitString;
 
   inherit (helpers)
-    combineTests;
+    combineTests findRepo;
 
   packages = stdenv.mkDerivation {
     name = "custom-packages";
-    src  = latestGit {
-      url = http://chriswarbo.net/git/nix-config.git;
-    };
+    src  = findRepo "nix-config" <nix-config>;
     buildInputs  = [ jq ];
     buildCommand = ''
       set -e

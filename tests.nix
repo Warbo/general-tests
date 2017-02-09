@@ -20,7 +20,11 @@ with rec {
 
     allHaskell = myHaskell // notMyHaskell;
 
-    myHaskell = mapAttrs (_: toString) {
+    findRepo = n: v: if getEnv "LOCAL" == "1"
+                        then getGit (repoOf n)
+                        else toString v;
+
+    myHaskell = mapAttrs findRepo {
       arbitrary-haskell       = <arbitrary-haskell>;
       ast-plugin              = <ast-plugin>;
       get-deps                = <get-deps>;
@@ -45,7 +49,7 @@ with rec {
       type-parser             = <type-parser>;
     };
 
-    notMyHaskell = mapAttrs (_: toString) {
+    notMyHaskell = mapAttrs findRepo {
       hipspec              = <hipspec>;
       ifcxt                = <ifcxt>;
       lazy-smallcheck-2012 = <lazy-smallcheck-2012>;
