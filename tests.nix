@@ -61,8 +61,7 @@ with rec {
         # Use cabal2nix to generate a derivation function, then use that
         # function's arguments to figure out what dependencies we need to
         # include
-        src        = getGit repo;
-        haskellDef = import (runCabal2nix { url = toString src; });
+        haskellDef = import (runCabal2nix { url = toString repo; });
       };
       trace "haskellSrcDeps ${repo}" filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
              (attrNames (functionArgs haskellDef));
@@ -74,7 +73,7 @@ with rec {
       trace "compileHaskell ${repo} ${step}" stdenv.mkDerivation {
         inherit step;
         name = "haskell-${step}";
-        src  = getGit repo;
+        src  = repo;
         buildInputs  = [
           haskellPackages.cabal-install
           (haskellPackages.ghcWithPackages (h: map (p: h."${p}")
