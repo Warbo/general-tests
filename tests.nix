@@ -30,12 +30,15 @@ with rec {
     ];
 
     haskellSrcDeps = repo:
-      # Use cabal2nix to generate a derivation function, then use that
-      # function's arguments to figure out what dependencies we need to include
-      src         = getGit repo;
-      haskellDef  = import (runCabal2nix { url = toString src; });
-      haskellArgs = filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
-                           (attrNames (functionArgs haskellDef));
+      with rec {
+        # Use cabal2nix to generate a derivation function, then use that
+        # function's arguments to figure out what dependencies we need to
+        # include
+        src        = getGit repo;
+        haskellDef = import (runCabal2nix { url = toString src; });
+      };
+      filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+             (attrNames (functionArgs haskellDef));
 
     # Sets up an environment to build a Haskell package from the given repo.
     # The step should be one of "configure", "build", "test" or "coverage",
