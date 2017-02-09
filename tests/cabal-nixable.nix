@@ -6,13 +6,14 @@ with rec {
     allHaskell combineTests getGit haskellSources repoOf;
 
   inherit (pkgs)
-    haskellPackages stdenv;
+    haskellPackages stdenv runCabal2nix;
 
   configurePkg = src:
     stdenv.mkDerivation {
       inherit src;
       name         = "configure-package";
-      buildInputs  = [ haskellPackages.cabal-install haskellPackages.ghc ];
+      buildInputs  = [ haskellPackages.cabal-install haskellPackages.ghc
+                       haskellPackages.happy ];
       buildCommand = ''
         set -e
         cp -r "$src" ./src
