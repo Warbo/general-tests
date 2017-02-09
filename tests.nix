@@ -3,7 +3,10 @@ with builtins;
 
 with rec {
   inherit (pkgs)
-    latestGit lib stdenv;
+    haskellPackages latestGit lib runCabal2nix stdenv;
+
+  inherit (lib)
+    concatStringsSep;
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
@@ -81,7 +84,7 @@ with rec {
 
           echo "Configuring" 1>&2
           export HOME="$PWD"
-          cabal configure ${concatStriconfigFlags} || fail "Failed to configure"
+          cabal configure $configFlags || fail "Failed to configure"
           [[ "x$step" = "xconfigure" ]] && succeed
 
           echo "Building" 1>&2

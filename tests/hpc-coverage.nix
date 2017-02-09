@@ -1,10 +1,14 @@
 { pkgs, helpers }:
 
+with builtins;
 with rec {
   inherit (pkgs)
-    xidel;
+    stdenv xidel;
 
-  testRepo = repo:
+  inherit (helpers)
+    combineTests compileHaskell myHaskell repoOf;
+
+  checkRepo = repo:
     stdenv.mkDerivation {
       name         = "haskell-coverage";
       results      = compileHaskell repo "coverage";
@@ -40,4 +44,12 @@ with rec {
         }
       '';
     };
-}
+
+  tests = listToAttrs (map (name: {
+                             inherit name;
+                             value = checkRepo (repoOf name);
+                           })
+                           myHaskell);
+};
+
+combineTests "hpc-coverage" tests

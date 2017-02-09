@@ -5,7 +5,7 @@ with {
     bash /*findutils*/ gnused haskellPackages jq runCommand
     sanitiseName stdenv;
   inherit (helpers)
-    allHaskell combineTests haskellRepos repoOf;
+    allHaskell combineTests compileHaskell haskellRepos repoOf;
 };
 with rec {
 
