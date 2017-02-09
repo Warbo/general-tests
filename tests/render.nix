@@ -1,13 +1,9 @@
 { pkgs, helpers }:
 
-with {
+rec {
   inherit (pkgs)
     stdenv;
 
-  inherit (helpers)
-    getGit repoOf;
-};
-{
   test = stdenv.mkDerivation {
            name = "writing";
            src  = findRepo "writing" <writing>;

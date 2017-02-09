@@ -20,7 +20,7 @@ with rec {
 
     allHaskell = myHaskell // notMyHaskell;
 
-    findRepo = n: v: if getEnv "LOCAL" == "1"
+    findRepo = n: v: if trace "findRepo ${n}" getEnv "LOCAL" == "1"
                         then getGit (repoOf n)
                         else toString v;
 
@@ -64,14 +64,14 @@ with rec {
         src        = getGit repo;
         haskellDef = import (runCabal2nix { url = toString src; });
       };
-      filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+      trace "haskellSrcDeps ${repo}" filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
              (attrNames (functionArgs haskellDef));
 
     # Sets up an environment to build a Haskell package from the given repo.
     # The step should be one of "configure", "build", "test" or "coverage",
     # which lets us stop early, e.g. "build" will stop after building.
     compileHaskell = repo: step:
-      stdenv.mkDerivation {
+      trace "compileHaskell ${repo} ${step}" stdenv.mkDerivation {
         inherit step;
         name = "haskell-${step}";
         src  = getGit repo;
