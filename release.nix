@@ -1,3 +1,3 @@
 import ./tests.nix {
-  pkgs = import <nixpkgs> { config = import <nix-config>; };
+  pkgs = import <nixpkgs> { config = import <nix-config/config.nix>; };
 }
