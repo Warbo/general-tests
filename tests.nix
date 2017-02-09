@@ -14,22 +14,42 @@ with rec {
 
     repoOf = r: "http://chriswarbo.net/git/${r}.git";
 
-    haskellRepos = map repoOf allHaskell;
+    haskellRepos = map repoOf (attrNames allHaskell);
 
     haskellSources = map getGit haskellRepos;
 
-    allHaskell = myHaskell ++ notMyHaskell;
+    allHaskell = myHaskell // notMyHaskell;
 
-    myHaskell = [
-      "arbitrary-haskell" "ast-plugin" "get-deps" "hs2ast-tests" "hs2ast"
-      "k-means" "lazy-lambda-calculus" "ml4hs-helper" "ml4hsfe" "mlspec-bench"
-      "mlspec-helper" "mlspec" "nix-eval" "order-deps" "panhandle" "panpipe"
-      "quickspec-measure" "reduce-equations" "runtime-arbitrary-tests"
-      "sample-bench" "tree-features" "type-parser"
-    ];
+    myHaskell = {
+      arbitrary-haskell       = <arbitrary-haskell>;
+      ast-plugin              = <ast-plugin>;
+      get-deps                = <get-deps>;
+      hs2ast-tests            = <hs2ast-tests>;
+      hs2ast                  = <hs2ast>;
+      k-means                 = <k-means>;
+      lazy-lambda-calculus    = <lazy-lambda-calculus>;
+      ml4hs-helper            = <ml4hs-helper>;
+      ml4hsfe                 = <ml4hsfe>;
+      mlspec-bench            = <mlspec-bench>;
+      mlspec-helper           = <mlspec-helper>;
+      mlspec                  = <mlspec>;
+      nix-eval                = <nix-eval>;
+      order-deps              = <order-deps>;
+      panhandle               = <panhandle>;
+      panpipe                 = <panpipe>;
+      quickspec-measure       = <quickspec-measure>;
+      reduce-equations        = <reduce-equations>;
+      runtime-arbitrary-tests = <runtime-arbitrary-tests>;
+      sample-bench            = <sample-bench>;
+      tree-features           = <tree-features>;
+      type-parser             = <type-parser>;
+    };
 
     notMyHaskell = [
-      "hipspec" "ifcxt" "lazy-smallcheck-2012" "quickspec"
+      hipspec              = <hipspec>;
+      ifcxt                = <ifcxt>;
+      lazy-smallcheck-2012 = <lazy-smallcheck-2012>;
+      quickspec            = <quickspec>;
     ];
 
     haskellSrcDeps = repo:

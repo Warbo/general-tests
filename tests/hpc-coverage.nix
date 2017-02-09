@@ -45,11 +45,7 @@ with rec {
       '';
     };
 
-  tests = listToAttrs (map (name: {
-                             inherit name;
-                             value = checkRepo (repoOf name);
-                           })
-                           myHaskell);
+  tests = mapAttrs (_: checkRepo) myHaskell;
 };
 
 combineTests "hpc-coverage" tests

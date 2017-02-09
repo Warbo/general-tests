@@ -57,16 +57,12 @@ testRepo = src:
     buildCommand = testCommand;
   };
 
-tests = listToAttrs ((map (name: {
+tests = (mapAttrs (_: testRepo) myHaskell) //
+        (listToAttrs (map (name: {
                             inherit name;
                             value = mkTest name;
                           })
-                          projects) ++
-                     (map (name: {
-                            inherit name;
-                            value = testRepo (getGit (repoOf name));
-                          })
-                          myHaskell));
+                          projects));
 };
 
 combineTests "hlint-tests" tests

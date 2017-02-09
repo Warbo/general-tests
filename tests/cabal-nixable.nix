@@ -29,11 +29,7 @@ with rec {
       '';
     };
 
-  tests = listToAttrs (map (name: {
-                             inherit name;
-                             value = configurePkg (getGit (repoOf name));
-                           })
-                           allHaskell);
+  tests = mapAttrs (_: configurePkg) allHaskell;
 };
 
 combineTests "cabal-nixable" tests
