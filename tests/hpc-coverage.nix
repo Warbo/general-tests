@@ -18,33 +18,22 @@ with rec {
       buildInputs  = [ xidel ];
       MINIMUM      = "30";  # Coverage below this % will cause a failure
       buildCommand = ''
-        shopt -s nullglob
-        FOUND=0
         while read -r HTML
         do
-            FOUND=1
-            TOTAL='th[contains(text(),"Program Coverage Total")]'
-            PERCENT='following-sibling::td[1]/text()'
-            RAW=$(xidel - --extract "//$TOTAL/$PERCENT" < "$HTML")
-            RESULT=$(echo "$RAW" | tr -d '%')
-            echo "File '$HTML' has coverage '$RAW'"
-            if echo "$RESULT" | grep "[^0-9]" > /dev/null
-            then
-                # 0 shows up as "-", so fix it
-                echo "Percentage looks non-numeric; assuming 0"
-                RESULT=0
-            fi
-            if [[ "$RESULT" -lt "$MINIMUM" ]]
-            then
-                echo "'$RESULT' coverage for '$HTML'" 1>&2
-                exit 1
-            fi
-        done < <(find "$results" -name "hpc_index.html")
+          # Look up % from table, using a tricky XPath query
+          TOTAL='th[contains(text(),"Program Coverage Total")]'
+          PERCENT='following-sibling::td[1]/text()'
+          RAW=$(xidel - --extract "//$TOTAL/$PERCENT" < "$HTML")
 
-        [[ "$FOUND" -eq 1 ]] || {
-          echo "Found no coverage report" 1>&2
-          exit 1
-        }
+          echo "File '$HTML' has coverage '$RAW', requires $MINIMUM" 1>&2
+
+          # Remove % for comparison. 0 is denoted "-", so switch that out.
+          RESULT=$(echo "$RAW" | tr -d '%' | tr - 0)
+
+          # Check against minimum
+          [[ "$RESULT" -lt "$MINIMUM" ]] && exit 1
+          echo "Passed" > "$out"
+        done < <(find "$results" -name "hpc_index.html")
       '';
     };
 
