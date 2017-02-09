@@ -6,7 +6,10 @@ with rec {
     allHaskell combineTests getGit haskellSources repoOf;
 
   inherit (pkgs)
-    haskellPackages stdenv runCabal2nix;
+    haskellPackages lib runCabal2nix stdenv;
+
+  inherit (lib)
+    mapAttrs;
 
   configurePkg = src:
     stdenv.mkDerivation {

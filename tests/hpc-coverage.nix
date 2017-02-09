@@ -3,7 +3,10 @@
 with builtins;
 with rec {
   inherit (pkgs)
-    stdenv xidel;
+    lib stdenv xidel;
+
+  inherit (lib)
+    mapAttrs;
 
   inherit (helpers)
     combineTests compileHaskell myHaskell repoOf;

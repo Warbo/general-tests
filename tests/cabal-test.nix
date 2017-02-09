@@ -1,12 +1,14 @@
 { pkgs ? import <nixpkgs> {}, helpers ? {} }:
 with builtins;
-with {
+with rec {
   inherit (pkgs)
-    bash gnused haskellPackages jq runCommand sanitiseName stdenv;
+    bash gnused haskellPackages jq lib runCommand sanitiseName stdenv;
+
+  inherit (lib)
+    mapAttrs;
+
   inherit (helpers)
     allHaskell combineTests compileHaskell haskellRepos repoOf;
-};
-with rec {
 
   testRepo = repo:
     stdenv.mkDerivation {

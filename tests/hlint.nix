@@ -1,14 +1,19 @@
 { pkgs ? import <nixpkgs> {}, helpers ? {} }:
 with builtins;
 with {
-  inherit (pkgs)
-    bash findutils gnused haskellPackages jq latestGit runCommand sanitiseName
-    stdenv;
-  inherit (helpers)
-    combineTests getGit repoOf myHaskell;
+
 };
 
 with rec {
+  inherit (pkgs)
+    bash findutils gnused haskellPackages jq lib runCommand sanitiseName
+    stdenv;
+
+  inherit (lib)
+    mapAttrs;
+
+  inherit (helpers)
+    combineTests getGit repoOf myHaskell;
 
 getProjects = stdenv.mkDerivation {
   name         = "projects";
