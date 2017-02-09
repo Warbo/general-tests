@@ -3,7 +3,7 @@
 with builtins;
 with rec {
   inherit (helpers)
-    allHaskell combineTests getGit haskellSources repoOf;
+    allHaskell combineTests haskellSources;
 
   inherit (pkgs)
     haskellPackages lib runCabal2nix stdenv;

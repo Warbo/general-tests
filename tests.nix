@@ -10,7 +10,7 @@ with rec {
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
-    getGit = url: latestGit { inherit url; };
+    getGit = url: trace "getGit ${url}" latestGit { inherit url; };
 
     repoOf = r: "http://chriswarbo.net/git/${r}.git";
 

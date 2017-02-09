@@ -10,7 +10,7 @@ with {
 {
   test = stdenv.mkDerivation {
            name = "writing";
-           src  = getGit (repoOf "writing");
+           src  = findRepo "writing" <writing>;
            buildCommand = ''
              while read -r SCRIPT
              do

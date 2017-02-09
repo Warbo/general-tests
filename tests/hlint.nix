@@ -13,7 +13,7 @@ with rec {
     mapAttrs;
 
   inherit (helpers)
-    combineTests getGit repoOf myHaskell;
+    combineTests myHaskell;
 
 getProjects = stdenv.mkDerivation {
   name         = "projects";
