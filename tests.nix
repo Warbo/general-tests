@@ -45,12 +45,12 @@ with rec {
       type-parser             = <type-parser>;
     };
 
-    notMyHaskell = [
+    notMyHaskell = {
       hipspec              = <hipspec>;
       ifcxt                = <ifcxt>;
       lazy-smallcheck-2012 = <lazy-smallcheck-2012>;
       quickspec            = <quickspec>;
-    ];
+    };
 
     haskellSrcDeps = repo:
       with rec {
