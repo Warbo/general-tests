@@ -44,7 +44,6 @@ with rec {
       quickspec-measure       = <quickspec-measure>;
       reduce-equations        = <reduce-equations>;
       runtime-arbitrary-tests = <runtime-arbitrary-tests>;
-      sample-bench            = <sample-bench>;
       tree-features           = <tree-features>;
       type-parser             = <type-parser>;
     };
