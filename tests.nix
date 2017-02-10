@@ -3,7 +3,7 @@ with builtins;
 
 with rec {
   inherit (pkgs)
-    haskellPackages latestGit lib runCabal2nix stdenv;
+    haskellPackages latestGit lib runCabal2nix stdenv zlib;
 
   inherit (lib)
     concatStringsSep mapAttrs;
@@ -75,6 +75,8 @@ with rec {
         name = "haskell-${step}";
         src  = repo;
         buildInputs  = [
+          haskellPackages.happy
+          zlib.out
           haskellPackages.cabal-install
           (haskellPackages.ghcWithPackages (h: map (p: h."${p}")
                                                    (haskellSrcDeps repo)))
