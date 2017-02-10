@@ -44,7 +44,7 @@ with rec {
 
   # Repos which get flagged as Haskell, despite not being so
   nonHaskellRepos = map (r: "http://chriswarbo.net/git/${r}.git") [
-    "haskell-te" "isahipster" "writing"
+    "haskell-te" "isahipster" "sample-bench" "writing"
   ];
 };
 assert fold (repo: _: if elem repo haskellRepos
