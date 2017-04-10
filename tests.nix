@@ -1,12 +1,8 @@
 { pkgs ? import <nixpkgs> {} }:
 with builtins;
-
+with pkgs;
+with lib;
 with rec {
-  inherit (pkgs)
-    haskellPackages latestGit lib runCabal2nix stdenv zlib;
-
-  inherit (lib)
-    concatStringsSep mapAttrs;
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
@@ -24,36 +20,50 @@ with rec {
                         then getGit (repoOf n)
                         else toString v;
 
-    myHaskell = mapAttrs findRepo {
-      arbitrary-haskell       = <arbitrary-haskell>;
-      ast-plugin              = <ast-plugin>;
-      get-deps                = <get-deps>;
-      hs2ast-tests            = <hs2ast-tests>;
-      hs2ast                  = <hs2ast>;
-      k-means                 = <k-means>;
-      lazy-lambda-calculus    = <lazy-lambda-calculus>;
-      ml4hs-helper            = <ml4hs-helper>;
-      ml4hsfe                 = <ml4hsfe>;
-      mlspec-bench            = <mlspec-bench>;
-      mlspec-helper           = <mlspec-helper>;
-      mlspec                  = <mlspec>;
-      nix-eval                = <nix-eval>;
-      order-deps              = <order-deps>;
-      panhandle               = <panhandle>;
-      panpipe                 = <panpipe>;
-      quickspec-measure       = <quickspec-measure>;
-      reduce-equations        = <reduce-equations>;
-      runtime-arbitrary-tests = <runtime-arbitrary-tests>;
-      tree-features           = <tree-features>;
-      type-parser             = <type-parser>;
-    };
+    inputFallback = name:
+      with rec {
+        found = fold (this: result: if this.prefix == name
+                                       then this.path
+                                       else result)
+                     null
+                     nixPath;
+      };
+      if found == null
+         then repoOf name
+         else found;
 
-    notMyHaskell = mapAttrs findRepo {
-      hipspec              = <hipspec>;
-      ifcxt                = <ifcxt>;
-      lazy-smallcheck-2012 = <lazy-smallcheck-2012>;
-      quickspec            = <quickspec>;
-    };
+    myHaskell = genAttrs [
+        "arbitrary-haskell"
+        "ast-plugin"
+        "get-deps"
+        "hs2ast-tests"
+        "hs2ast"
+        "k-means"
+        "lazy-lambda-calculus"
+        "ml4hs-helper"
+        "ml4hsfe"
+        "mlspec-bench"
+        "mlspec-helper"
+        "mlspec"
+        "nix-eval"
+        "order-deps"
+        "panhandle"
+        "panpipe"
+        "quickspec-measure"
+        "reduce-equations"
+        "runtime-arbitrary-tests"
+        "tree-features"
+        "type-parser"
+      ]
+      inputFallback;
+
+    notMyHaskell = genAttrs [
+        "hipspec"
+        "ifcxt"
+        "lazy-smallcheck-2012"
+        "quickspec"
+      ]
+      inputFallback;
 
     haskellSrcDeps = repo:
       with rec {
@@ -137,6 +147,6 @@ with rec {
 with lib;
 listToAttrs (map (f: {
                    name  = removeSuffix ".nix" f;
-                   value = import (./tests + "/${f}") { inherit helpers pkgs; };
+                   value = trace "Test: ${f}" import (./tests + "/${f}") { inherit helpers pkgs; };
                  })
                  (attrNames (readDir ./tests)))

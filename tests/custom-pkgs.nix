@@ -9,11 +9,11 @@ with rec {
     attrByPath splitString;
 
   inherit (helpers)
-    combineTests findRepo;
+    combineTests findRepo inputFallback;
 
   packages = stdenv.mkDerivation {
     name = "custom-packages";
-    src  = findRepo "nix-config" <nix-config>;
+    src  = inputFallback "nix-config";
     buildInputs  = [ jq ];
     buildCommand = ''
       set -e
