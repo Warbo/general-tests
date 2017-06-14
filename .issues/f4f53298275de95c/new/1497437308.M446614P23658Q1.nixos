@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Wed, 14 Jun 2017 11:47:41 +0100
+Subject: Re: Mutex test runner
+Message-Id: <f4f53298275de95c-83e1571563e305e6-artemis@nixos>
+References: <f4f53298275de95c-0-artemis@nixos>
+In-Reply-To: <f4f53298275de95c-0-artemis@nixos>
+
+Fixed, using flock. This way, we get a /tmp file but we don't have to
+worry about e.g. exit traps, power loss, etc. leaving old lock files
+hanging around.
