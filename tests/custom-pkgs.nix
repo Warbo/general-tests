@@ -69,7 +69,7 @@ with rec {
                                         then [ found ]  # Probably a package
                                         else [];        # Probably not a package
     };
-    trace given stdenv.mkDerivation {
+    stdenv.mkDerivation {
       name         = "check-pkg";
       buildInputs  = deps;
       buildCommand = ''touch "$out"'';
