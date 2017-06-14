@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Tue, 13 Jun 2017 21:54:16 +0100
-State: new
+State: resolved
 Subject: Make failed_tests accurate
 Message-Id: <96f655e7465f460f-0-artemis@nixos>
+resolution: fixed
 
 failed_tests is currently overcomplicated and wrong. Come up with a
 mechanism such that:

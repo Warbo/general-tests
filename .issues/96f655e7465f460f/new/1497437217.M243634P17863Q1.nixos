@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Wed, 14 Jun 2017 11:45:57 +0100
+Subject: Re: Make failed_tests accurate
+Message-Id: <96f655e7465f460f-e643d30687509727-artemis@nixos>
+References: <96f655e7465f460f-0-artemis@nixos>
+In-Reply-To: <96f655e7465f460f-0-artemis@nixos>
+
+failed_tests is now reporting pass/total based on the contents of
+results/pass (pass) and results/attrs.json (total)
