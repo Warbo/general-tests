@@ -1,5 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell --show-trace -i bash
+#!/usr/bin/env bash
 
 shopt -s nullglob
 
