@@ -26,6 +26,13 @@ function refresh {
             continue
         fi
 
+        if [[ "x$MODE" = "xgiven" ]] &&
+           echo "$GIVEN" | jq -e --argjson pth "$PTH" \
+                              'map(. != $pth) | all' > /dev/null
+        then
+            continue
+        fi
+
         now > ../results/running/"$PTH"
         printf 'Test %s: ' "$PTH" 1>&2
         if echo "$PTH" | ./runByPath.sh 1> ../results/stdout/"$PTH" \
@@ -44,10 +51,12 @@ function refresh {
 }
 
 function getPaths {
-    nix-instantiate --show-trace --json --read-write-mode --strict --eval \
-                    -E 'import ../tests.nix {}' 1> >(tee "$F.new") \
-                                                2> >(tee "$ERR" 1>&2)
-    mv "$F.new" "$F"
+    if ! [[ -e "$F" ]] || test "$(find "$F" -mmin +30)"
+    then
+        ./refreshAttrs.sh
+    else
+        cat "$F"
+    fi
 }
 
 # Bail out if we can't get a lock; only one running at a time
