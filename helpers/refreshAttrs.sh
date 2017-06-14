@@ -14,7 +14,8 @@ do
 done < <(gitRevEnvVars)
 
 nix-instantiate --show-trace --json --read-write-mode --strict --eval \
-                -E 'import ../tests.nix {}' 1> >(tee "$F.new") \
-                                            2> >(tee "$ERR" 1>&2)
+                -E 'import ../tests.nix {}' \
+                1> >(jq -c 'path(..|select(type=="string"))' | tee "$F.new") \
+                2> >(tee "$ERR" 1>&2)
 
 mv "$F.new" "$F"
