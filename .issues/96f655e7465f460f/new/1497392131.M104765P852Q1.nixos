@@ -1,0 +1,9 @@
+From: Chris Warburton
+Date: Tue, 13 Jun 2017 22:18:47 +0100
+Subject: Re: Make failed_tests accurate
+Message-Id: <96f655e7465f460f-c27a13ce2b34936c-artemis@nixos>
+References: <96f655e7465f460f-0-artemis@nixos>
+In-Reply-To: <96f655e7465f460f-0-artemis@nixos>
+
+How about using the attribute paths, and saying pass/fail? For now, it's
+fine if we have to run the whole lot.

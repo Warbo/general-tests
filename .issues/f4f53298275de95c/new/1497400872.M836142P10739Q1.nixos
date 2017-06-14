@@ -1,0 +1,7 @@
+From: Chris Warburton
+Date: Wed, 14 Jun 2017 01:40:42 +0100
+State: new
+Subject: Mutex test runner
+Message-Id: <f4f53298275de95c-0-artemis@nixos>
+
+Add a lock to only allow one test runner at a time.

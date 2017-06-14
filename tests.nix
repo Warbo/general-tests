@@ -6,9 +6,16 @@ with rec {
 
   # Use this for helper functions, etc. common to many tests
   helpers = rec {
-    getGit = url: trace "getGit ${url}" latestGit { inherit url; };
+    getGit = url: latestGit { inherit url; };
 
-    repoOf = r: "http://chriswarbo.net/git/${r}.git";
+    repoOf = r:
+      let given = getEnv "GIT_REPO_DIR";
+          local = if given == ""
+                     then "/home/chris/Programming/repos/${r}.git"
+                     else "${given}/${r}.git";
+       in if pathExists local
+             then local
+             else "http://chriswarbo.net/git/${r}.git";
 
     haskellRepos = map repoOf (attrNames allHaskell);
 
@@ -16,9 +23,11 @@ with rec {
 
     allHaskell = myHaskell // notMyHaskell;
 
-    findRepo = n: v: if trace "findRepo ${n}" getEnv "LOCAL" == "1"
-                        then getGit (repoOf n)
-                        else toString v;
+    inPaths = n: any ({ path, prefix }: n == prefix) nixPath;
+
+    findRepo = n: v: if inPaths n
+                        then toString v
+                        else getGit (repoOf n);
 
     inputFallback = name:
       with rec {
@@ -29,7 +38,7 @@ with rec {
                      nixPath;
       };
       if found == null
-         then repoOf name
+         then getGit (repoOf name)
          else found;
 
     myHaskell = genAttrs [
@@ -72,14 +81,14 @@ with rec {
         # include
         haskellDef = import (runCabal2nix { url = toString repo; });
       };
-      trace "haskellSrcDeps ${repo}" filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
+      filter (p: !(elem p [ "mkDerivation" "stdenv" ]))
              (attrNames (functionArgs haskellDef));
 
     # Sets up an environment to build a Haskell package from the given repo.
     # The step should be one of "configure", "build", "test" or "coverage",
     # which lets us stop early, e.g. "build" will stop after building.
     compileHaskell = repo: step:
-      trace "compileHaskell ${repo} ${step}" stdenv.mkDerivation {
+      stdenv.mkDerivation {
         inherit step;
         name = "haskell-${step}";
         src  = repo;
@@ -147,6 +156,6 @@ with rec {
 with lib;
 listToAttrs (map (f: {
                    name  = removeSuffix ".nix" f;
-                   value = trace "Test: ${f}" import (./tests + "/${f}") { inherit helpers pkgs; };
+                   value = import (./tests + "/${f}") { inherit helpers pkgs; };
                  })
                  (attrNames (readDir ./tests)))
