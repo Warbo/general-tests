@@ -5,14 +5,6 @@ ERR=../results/attrs.err
 
 cd "$(dirname "$(readlink -f "$0")")"
 
-# Speeds up latestGit
-while read -r VAR
-do
-    N=$(echo "$VAR" | cut -f1)
-    V=$(echo "$VAR" | cut -f2)
-    export "$N"="$V"
-done < <(gitRevEnvVars)
-
 function go {
     nix-instantiate --read-write-mode --eval \
                     -E 'import ./testPaths.nix' 2> >(tee "$ERR" 1>&2) |
