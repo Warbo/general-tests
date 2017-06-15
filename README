@@ -25,10 +25,6 @@ of each test run is written to results/stdout/ and results/stderr/.
 Most usage is via ./run, which will run all tests. Note that some test results
 may be cached by Nix, so this isn't as expensive as it sounds.
 
-Available test paths are cached for an hour, after which ./run will regenerate
-them. You can force their regeneration by deleting results/attrs.json or by
-setting the FORCE_REFRESH variable.
-
 ### Modes ###
 
 By default, all tests are run. By setting the MODE env var to `failed`, only
