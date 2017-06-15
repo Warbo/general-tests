@@ -13,8 +13,8 @@ FULL=0
 # test script
 
 function data {
-    locate -e "*/test.sh"
-    locate -e "*/tests.sh"
+    locate -e "* /test.sh"
+    locate -e "* /tests.sh"
 }
 
 function cached {
@@ -82,7 +82,7 @@ function seemsSufficient {
 
 function thoroughCheck {
     # Strip off /home/chris/Foo/
-    SPECIFIC=$(dirname "$(echo "$1" | sed -e 's@/home/chris/[^/]*/@@g')")
+    SPECIFIC=$(dirname "$(echo "$1" | sed -e 's@/home/chris/[^/]* /@@g')")
 
     # Look for this directory in our test
     grep "$SPECIFIC" < "$2" > /dev/null

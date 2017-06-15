@@ -7,7 +7,7 @@ runCommand "dummy" {} "exit 1"
 
 function files {
     # Find .git/config files
-    locate -e "/home/chris/*/config" |
+    locate -e "/home/chris/ * /config" |
         grep    ".git"               |
         grep -v "/git-html"
 }

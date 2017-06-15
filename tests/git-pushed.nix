@@ -17,7 +17,7 @@ function fail {
 
 function repos {
     # Find git repos based on their .git directories
-    locate -e "/home/chris/*/.git" | skip
+    locate -e "/home/chris/ * /.git" | skip
 }
 
 function msg {

@@ -10,7 +10,7 @@ FULL=0
 [[ "x$1" = "xfull" ]] && FULL=1
 
 function data {
-    locate -e '/home/chris/Programming/*/.git' |
+    locate -e '/home/chris/Programming/ * /.git' |
     grep -v "/git-html/" |
     grep -v "/ATS/aos"
 }

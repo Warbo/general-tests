@@ -18,17 +18,17 @@ ERR=0
 while read -r script
 do
     SHEBANG=$(head -n 1 < "$script")
-    if echo "$SHEBANG" | grep "#![ ]*/bin/sh" > /dev/null
+    if echo "$SHEBANG" | grep "#![ ]* /bin/sh" > /dev/null
     then
         echo "#!/bin/sh in $script may break on Debian (dash)" 1>&2
         ERR=1
     fi
-    if echo "$SHEBANG" | grep "#![ ]*/bin/bash" > /dev/null
+    if echo "$SHEBANG" | grep "#![ ]* /bin/bash" > /dev/null
     then
         echo "#!/bin/bash in $script won't work on NixOS" 1>&2
         ERR=1
     fi
-    if echo "$SHEBANG" | grep "#![ ]*/usr/bin" > /dev/null &&
+    if echo "$SHEBANG" | grep "#![ ]* /usr/bin" > /dev/null &&
      ! echo "$SHEBANG" | grep "/usr/bin/env" > /dev/null
     then
         echo "Shebang for $script may not work on NixOS"

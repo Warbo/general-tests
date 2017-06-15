@@ -11,7 +11,7 @@ FULL=0
 
 function backups {
     locate -e "/home/chris/Programming/*~"
-    locate -e "/home/chris/Programming/*/#*#"
+    locate -e "/home/chris/Programming/ * /#*#"
     locate -e "/.#"
 }
 
