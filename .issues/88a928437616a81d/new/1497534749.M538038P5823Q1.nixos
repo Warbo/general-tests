@@ -1,0 +1,10 @@
+From: Chris Warburton
+Date: Thu, 15 Jun 2017 14:51:06 +0100
+Subject: Re: Nixify test scripts
+Message-Id: <88a928437616a81d-f5b8bc931fe0413c-artemis@nixos>
+References: <88a928437616a81d-0-artemis@nixos>
+In-Reply-To: <88a928437616a81d-0-artemis@nixos>
+
+Moved all scripts/* to tests/* and stubbed out dummy Nix derivations at
+the top. These dummy tests just fail immediately, so we can fix them on
+a case by case basis just like any other failing test.
