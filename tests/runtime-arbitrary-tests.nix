@@ -1,9 +1,20 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+with {
+  NIX_EVAL_HASKELL_PKGS = writeScript "ghc7.10-for-nix-eval.nix" ''
+    (import <nixpkgs> {}).haskell.packages.ghc7103
+  '';
 
-/*
-#!/usr/bin/env bash
+  run = extraEnv: runCommand "runtime-arbitrary-tests"
+                    (withNix {
+                      buildInputs = [ haskellPackages.runtime-arbitrary-tests ];
+                    } // extraEnv)
+                    ''
+                      runtime-arbitrary-tests && echo "Pass" > "$out"
+                    '';
+};
+{
+  ghc7103 = run { inherit NIX_EVAL_HASKELL_PKGS; };
 
-nix-shell -p haskellPackages.runtime-arbitrary-tests --run runtime-arbitrary-tests
-*/
+  haskellPackages = shouldFail (run {});
+}
