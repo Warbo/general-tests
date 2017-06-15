@@ -9,7 +9,7 @@ with rec {
     mapAttrs;
 
   inherit (helpers)
-    combineTests compileHaskell myHaskell repoOf;
+    compileHaskell myHaskell repoOf;
 
   checkRepo = repo:
     stdenv.mkDerivation {
@@ -40,4 +40,4 @@ with rec {
   tests = mapAttrs (_: checkRepo) myHaskell;
 };
 
-combineTests "hpc-coverage" tests
+tests

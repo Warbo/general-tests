@@ -9,7 +9,7 @@ with rec {
     attrByPath splitString;
 
   inherit (helpers)
-    combineTests findRepo inputFallback;
+    findRepo inputFallback;
 
   packages = stdenv.mkDerivation {
     name = "custom-packages";
@@ -82,4 +82,4 @@ with rec {
                            (import "${packages}"));
 };
 
-combineTests "custom-pkg-test" tests
+tests

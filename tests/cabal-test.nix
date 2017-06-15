@@ -8,7 +8,7 @@ with rec {
     mapAttrs;
 
   inherit (helpers)
-    allHaskell combineTests compileHaskell haskellRepos repoOf;
+    allHaskell compileHaskell haskellRepos repoOf;
 
   testRepo = repo:
     stdenv.mkDerivation {
@@ -22,4 +22,4 @@ with rec {
   tests = mapAttrs (_: testRepo) allHaskell;
 };
 
-combineTests "cabal-tests" tests
+tests

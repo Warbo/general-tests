@@ -3,7 +3,7 @@
 with builtins;
 with rec {
   inherit (helpers)
-    allHaskell combineTests haskellSources;
+    allHaskell haskellSources;
 
   inherit (pkgs)
     haskellPackages lib runCabal2nix stdenv;
@@ -35,4 +35,4 @@ with rec {
   tests = mapAttrs (_: configurePkg) allHaskell;
 };
 
-combineTests "cabal-nixable" tests
+tests

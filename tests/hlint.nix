@@ -13,7 +13,7 @@ with rec {
     mapAttrs;
 
   inherit (helpers)
-    combineTests myHaskell;
+    myHaskell;
 
 getProjects = stdenv.mkDerivation {
   name         = "projects";
@@ -70,4 +70,4 @@ tests = (mapAttrs (_: testRepo) myHaskell) //
                           projects));
 };
 
-combineTests "hlint-tests" tests
+tests

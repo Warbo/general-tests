@@ -139,18 +139,6 @@ with rec {
           succeed
         '';
       };
-
-
-    combineTests = name: tests:
-      tests // {
-        test = stdenv.mkDerivation {
-          inherit name;
-          buildInputs  = attrValues tests;
-          buildCommand = ''
-            echo "Pass" > "$out"
-          '';
-        };
-      };
   };
 };
 with lib;
