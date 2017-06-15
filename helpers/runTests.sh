@@ -17,6 +17,7 @@ function now {
 }
 
 function go {
+    HAVE_LOCK=1 ./refreshAttrs.sh
     while read -r PTH
     do
         if [[ "x$MODE" = "xfailed" ]] && ! [[ -f ../results/fail/"$PTH" ]]
