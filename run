@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$(readlink -f "$0")")"
 
-F=../results/attrs.json
+F=./results/attrs.json
 
 # Bail out if we can't get a lock; only one running at a time
 (
@@ -13,7 +13,7 @@ F=../results/attrs.json
     }
     if ! [[ -e "$F" ]] || test "$(find "$F" -mmin +30)"
     then
-        HAVE_LOCK=1 ./refreshAttrs.sh
+        HAVE_LOCK=1 ./helpers/refreshAttrs.sh
     fi
-    HAVE_LOCK=1 ./runTests.sh
+    HAVE_LOCK=1 ./helpers/runTests.sh
 ) 9>/tmp/tests.lock
