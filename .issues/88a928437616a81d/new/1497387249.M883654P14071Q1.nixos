@@ -1,7 +1,8 @@
 From: Chris Warburton
 Date: Tue, 13 Jun 2017 21:53:38 +0100
-State: new
+State: resolved
 Subject: Nixify test scripts
 Message-Id: <88a928437616a81d-0-artemis@nixos>
+resolution: fixed
 
 Migrate existing bash scripts over to Nix, so they can be run on Hydra
