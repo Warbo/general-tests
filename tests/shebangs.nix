@@ -1,41 +1,47 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+with rec {
+  checkShebang = writeScript "check-shebang" ''
+    #!/usr/bin/env bash
+    script="$1"
 
-/*
-#!/usr/bin/env bash
-
-# Pass in the argument "full" to keep going after a failure
-FULL=0
-[[ "x$1" = "xfull" ]] && FULL=1
-
-function scripts {
-    find ~/System/Tests    -name "*.sh"
-    find ~/warbo-utilities -name "*.sh"
-}
-
-ERR=0
-while read -r script
-do
     SHEBANG=$(head -n 1 < "$script")
-    if echo "$SHEBANG" | grep "#![ ]* /bin/sh" > /dev/null
+    if echo "$SHEBANG" | grep "#![ ]*/bin/sh" > /dev/null
     then
-        echo "#!/bin/sh in $script may break on Debian (dash)" 1>&2
-        ERR=1
+      echo "#!/bin/sh in $script may break on Debian (dash)" 1>&2
+      exit 1
     fi
-    if echo "$SHEBANG" | grep "#![ ]* /bin/bash" > /dev/null
-    then
-        echo "#!/bin/bash in $script won't work on NixOS" 1>&2
-        ERR=1
-    fi
-    if echo "$SHEBANG" | grep "#![ ]* /usr/bin" > /dev/null &&
-     ! echo "$SHEBANG" | grep "/usr/bin/env" > /dev/null
-    then
-        echo "Shebang for $script may not work on NixOS"
-        ERR=1
-    fi
-    [[ "$ERR" -eq 0 ]] || [[ "$FULL" -eq 1 ]] || exit 1
-done < <(scripts)
 
-exit "$ERR"
-*/
+    if echo "$SHEBANG" | grep "#![ ]*/bin/bash" > /dev/null
+    then
+      echo "#!/bin/bash in $script won't work on NixOS" 1>&2
+      exit 1
+    fi
+
+    if   echo "$SHEBANG" | grep "#![ ]*/usr/bin" > /dev/null &&
+       ! echo "$SHEBANG" | grep "/usr/bin/env"   > /dev/null
+    then
+      echo "Shebang for $script may not work on NixOS"
+      exit 1
+    fi
+
+    exit 0
+  '';
+
+  checkScripts = dir: runCommand "check" { inherit checkShebang dir; } ''
+    while read -r script
+    do
+      "$checkShebang" "$script"
+    done < <(find "$dir" -name "*.sh")
+    echo "Pass" > "$out"
+  '';
+};
+{
+  tests = checkScripts (latestGit {
+    url = "http://chriswarbo.net/git/general-tests.git";
+  });
+
+  warbo-utilities = checkScripts (latestGit {
+    url = "http://chriswarbo.net/git/warbo-utilities.git";
+  });
+}
