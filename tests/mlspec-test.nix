@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -15,3 +20,4 @@ cd "$DIR" || fail "Couldn't cd to '$DIR'"
 hsConfig || fail "hsConfig failed"
 
 ./test.sh
+*/

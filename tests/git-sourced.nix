@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function files {
@@ -70,3 +75,4 @@ remotesExist
  localsExist
 
 exit "$ERR"
+*/

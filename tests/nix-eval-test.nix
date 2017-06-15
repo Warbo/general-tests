@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 # nix-eval's test suite is empty if nix-shell isn't available, which is the case
@@ -48,3 +53,4 @@ popd > /dev/null
 popd > /dev/null
 
 rm -rf "$DIR"
+*/

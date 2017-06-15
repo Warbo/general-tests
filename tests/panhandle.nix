@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 echo "Checking for panhandle binary"
 nix-shell --show-trace -p panhandle -p which --run 'which panhandle' || {
@@ -27,3 +32,4 @@ echo "$HTML" | grep '<em>foo</em>' || {
     echo "Didn't unwrap *foo* in '$HTML'" 1>&2
     exit 1
 }
+*/

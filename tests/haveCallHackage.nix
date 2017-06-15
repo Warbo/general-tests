@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 set -e
@@ -21,3 +26,4 @@ MSG="No callHackage when customisations enabled"
   exit 1
 }
 echo "ok - $MSG"
+*/

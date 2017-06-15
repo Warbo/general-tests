@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 DIR="/home/chris/Documents/ArchivedPapers"
@@ -142,3 +147,4 @@ exit 0
 lacheck
 ChkTeX
 "http://www.ctan.org/tex-archive/support/check/"
+*/

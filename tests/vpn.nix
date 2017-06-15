@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 # Bail out if we're not connected to Dundee Uni WiFi
@@ -20,3 +25,4 @@ then
     echo "Samba share not mounted" 1>&2
     exit 1
 fi
+*/

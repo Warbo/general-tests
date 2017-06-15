@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -13,3 +18,4 @@ then
     echo "$OUTPUT" | grep "Program reconfiguration successful." > /dev/null ||
         fail "Looks like recompiling imm config failed: $OUTPUT"
 fi
+*/

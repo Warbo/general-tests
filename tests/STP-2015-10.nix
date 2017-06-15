@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -7,3 +12,4 @@ function fail {
 
 [[ -e ~/Writing/STP/sites/stp/2015/10/index.md ]] || fail "2015/10 has no index"
 [[ -e ~/Writing/STP/talks/2015/10/slides.md ]]    || fail "2015/10 has no slides"
+*/

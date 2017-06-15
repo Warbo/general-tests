@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -10,3 +15,4 @@ cd "$DIR" || fail "Couldn't cd to '$DIR'"
 
 # This sets up the environment for tests/test.sh
 ./test.sh
+*/

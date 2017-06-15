@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -57,3 +62,4 @@ do
 done < <(echo "$OUTPUT" | grep "^building path.*repo-head")
 
 echo "Looks OK"
+*/

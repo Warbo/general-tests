@@ -1,3 +1,8 @@
+        { helpers, pkgs }:
+        with pkgs;
+        runCommand "dummy" {} "exit 1"
+
+        /*
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p hydra
 
@@ -16,3 +21,4 @@ hydra-eval-jobs              \
     --show-trace             \
     -I "haskell-te-src=$PWD" \
     -I "nixpkgs=$PKG_PATH"
+*/

@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 # Pass in the argument "full" to keep going after a failure
@@ -23,3 +28,4 @@ do
 done < <(backups | skip)
 
 exit "$ERR"
+*/

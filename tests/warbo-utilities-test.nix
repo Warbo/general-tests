@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 function fail {
@@ -8,3 +13,4 @@ function fail {
 DIR=~/warbo-utilities
 cd "$DIR" || fail "Couldn't cd to '$DIR'"
 ./test.sh
+*/

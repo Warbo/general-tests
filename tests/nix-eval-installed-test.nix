@@ -1,3 +1,8 @@
+{ helpers, pkgs }:
+with pkgs;
+runCommand "dummy" {} "exit 1"
+
+/*
 #!/usr/bin/env bash
 
 # Test that we can use an installed nix-eval, i.e. from outside its source
@@ -28,3 +33,4 @@ function runProg {
 OUTPUT=$(runProg)
 
 [[ "x$OUTPUT" = "xTrue" ]] || fail "Wrong output '$OUTPUT'"
+*/
