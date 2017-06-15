@@ -14,11 +14,11 @@ do
 done < <(gitRevEnvVars)
 
 function go {
-    nix-instantiate --show-trace --json --read-write-mode --strict --eval \
-                    -E 'import ../tests.nix {}' \
-                    1> >(jq -c 'path(..|select(type=="string"))' | tee "$F.new") \
-                    2> >(tee "$ERR" 1>&2)
-
+    nix-instantiate --read-write-mode --eval \
+                    -E 'import ./testPaths.nix' 2> >(tee "$ERR" 1>&2) |
+        jq -r '.'   |
+        jq -c '.[]' |
+        tee "$F.new"
     mv "$F.new" "$F"
 }
 
