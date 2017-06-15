@@ -3,12 +3,37 @@
 I use this as a high-level test harness, testing as many of my projects as
 possible; like a poor man's continuous integration server.
 
-It's really simple:
+## Architecture ##
 
- - Anything in scripts/ is a test
- - A test passes if its exit code is zero
- - A test fails if its exit code is non-zero
- - To execute a single test, just run it, since they're just regular scripts
- - To run the suite, run ./run
- - Successful tests get a file put in results/pass/; deleting these forces the
-   tests to re-run
+Tests are defined in the Nix files in tests/ and run by calling ./run.
+
+The release.nix file allows testing on the Hydra continuous integration server.
+
+Each test file can define either a derivation, or a (possibly nested) set of
+derivations. Each of these derivations is a test, and is identified using the
+"path" (lists of keys) which leads to it.
+
+A list of all test paths is in results/attrs.json (stderr from getting these is
+in results/attrs.err).
+
+A test passes when it builds successfully. Passing tests get an entry in
+results/pass/; failing tests get one in results/fail/. The stdout and stderr
+of each test run is written to results/stdout/ and results/stderr/.
+
+## Usage ##
+
+Most usage is via ./run, which will run all tests. Note that some test results
+may be cached by Nix, so this isn't as expensive as it sounds.
+
+Available test paths are cached for an hour, after which ./run will regenerate
+them. You can force their regeneration by deleting results/attrs.json or by
+setting the FORCE_REFRESH variable.
+
+### Modes ###
+
+By default, all tests are run. By setting the MODE env var to `failed`, only
+those with entries in results/fail will be run. By setting MODE to `given` and
+setting the GIVEN env var to a JSON array of paths, only the tests identified by
+those paths will be run.
+
+The `jq` command is useful for manipulating JSON.

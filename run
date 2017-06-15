@@ -11,7 +11,9 @@ F=./results/attrs.json
         echo "Couldn't aquire lock, is another instance running?" 1>&2
         exit 1
     }
-    if ! [[ -e "$F" ]] || test "$(find "$F" -mmin +30)"
+    if ! [[ -e "$F" ]]           ||
+       [[ -n "$FORCE_REFRESH" ]] ||
+       test "$(find "$F" -mmin +60)"
     then
         HAVE_LOCK=1 ./helpers/refreshAttrs.sh
     fi
