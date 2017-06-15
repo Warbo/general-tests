@@ -13,9 +13,24 @@ do
     export "$N"="$V"
 done < <(gitRevEnvVars)
 
-nix-instantiate --show-trace --json --read-write-mode --strict --eval \
-                -E 'import ../tests.nix {}' \
-                1> >(jq -c 'path(..|select(type=="string"))' | tee "$F.new") \
-                2> >(tee "$ERR" 1>&2)
+function go {
+    nix-instantiate --show-trace --json --read-write-mode --strict --eval \
+                    -E 'import ../tests.nix {}' \
+                    1> >(jq -c 'path(..|select(type=="string"))' | tee "$F.new") \
+                    2> >(tee "$ERR" 1>&2)
 
-mv "$F.new" "$F"
+    mv "$F.new" "$F"
+}
+
+if [[ -n "$HAVE_LOCK" ]]
+then
+    go
+else
+    (
+        flock -n 9 || {
+            echo "Couldn't aquire lock, is another instance running?" 1>&2
+            exit 1
+        }
+        go
+    ) 9>/tmp/tests.lock
+fi
