@@ -4,13 +4,14 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 F=../results/attrs.json
 
-# Speeds up latestGit
-while read -r VAR
-do
-    N=$(echo "$VAR" | cut -f1)
-    V=$(echo "$VAR" | cut -f2)
-    export "$N"="$V"
-done < <(gitRevEnvVars)
+function speedUpLatestGit {
+    while read -r VAR
+    do
+        N=$(echo "$VAR" | cut -f1)
+        V=$(echo "$VAR" | cut -f2)
+        export "$N"="$V"
+    done < <(gitRevEnvVars)
+}
 
 function now {
     date "+%s"
@@ -18,6 +19,7 @@ function now {
 
 function go {
     HAVE_LOCK=1 ./refreshAttrs.sh
+    speedUpLatestGit
     while read -r PTH
     do
         if [[ "x$MODE" = "xfailed" ]] && ! [[ -f ../results/fail/"$PTH" ]]
@@ -49,15 +51,10 @@ function go {
     done < "$F"
 }
 
-if [[ -n "$HAVE_LOCK" ]]
-then
+(
+    flock -n 9 || {
+        echo "Couldn't get lock; are other tests running?" 1>&2
+        exit 1
+    }
     go
-else
-    (
-        flock -n 9 || {
-            echo "Couldn't get lock; are other tests running?" 1>&2
-            exit 1
-        }
-        go
-    ) 9>/tmp/tests.lock
-fi
+) 9>/tmp/tests.lock
