@@ -2,9 +2,11 @@
 with pkgs;
 runCommand "conkeror-works"
   {
+    dotfiles    = latestGit { url = helpers.repoOf "warbo-dotfiles"; };
     buildInputs = [ xvfb_run conkeror procps ];
   }
   ''
+    export HOME="$dotfiles"
     timeout 30 xvfb-run conkeror "http://google.com" &
     PID="$!"
 
