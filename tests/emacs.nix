@@ -3,7 +3,7 @@ with pkgs;
 runCommand "emacs"
   {
     CFG         = latestGit { url = helpers.repoOf "warbo-emacs-d"; };
-    buildInputs = [ emacs ];
+    buildInputs = [ aspell aspellDicts.en emacs ];
   }
   ''
     export HOME="$PWD/home"
