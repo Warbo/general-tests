@@ -1,29 +1,15 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+with {
+  boolToDrv = bool: runCommand "bool2drv" {} ''
+    echo "foo" > "$out"
+    exit ${if bool then "0" else "1"}
+  '';
+};
+{
+  noCallHackageWhenCustomisationsAreDisabled = boolToDrv
+    ((import <nixpkgs> { config = _: {}; }).haskellPackages ? callHackage);
 
-/*
-#!/usr/bin/env bash
-
-set -e
-
-O=$(nix-instantiate --eval -E \
-      '(import <nixpkgs> { config = _: {}; }).haskellPackages ? callHackage')
-
-MSG="No callHackage when customisations are disabled"
-[[ "x$O" = "xtrue" ]] || {
-  echo "not ok - $MSG"
-  exit 1
+  haveCallHackageWhenCustomisationsEnabled = boolToDrv
+    ((import <nixpkgs> {}).haskellPackages ? callHackage);
 }
-echo "ok - $MSG"
-
-O=$(nix-instantiate --eval -E \
-      '(import <nixpkgs> {}).haskellPackages ? callHackage')
-
-MSG="No callHackage when customisations enabled"
-[[ "x$O" = "xtrue" ]] || {
-  echo "not ok - $MSG"
-  exit 1
-}
-echo "ok - $MSG"
-*/
