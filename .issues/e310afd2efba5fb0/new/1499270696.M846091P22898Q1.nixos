@@ -1,0 +1,11 @@
+From: Chris Warburton
+Date: Wed, 05 Jul 2017 17:01:41 +0100
+State: new
+Subject: New option: BEFORE
+Message-Id: <e310afd2efba5fb0-0-artemis@nixos>
+
+Check for a new env var 'BEFORE' which lets us supply a date (seconds
+since the epoch) to limit our tests to. For example, we can run tests
+which failed before yesterday, then kill the process; then run the same
+command again, and it will exclude those that it's just tested (since
+they didn't fail before yesterday)
