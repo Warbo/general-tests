@@ -74,6 +74,14 @@ with rec {
       ]
       inputFallback;
 
+    hsName =
+      with {
+        overrides = {};
+      };
+      repo: if hasAttr repo overrides
+               then getAttr repo overrides
+               else repo;
+
     haskellSrcDeps = repo:
       with rec {
         # Use cabal2nix to generate a derivation function, then use that
@@ -87,7 +95,7 @@ with rec {
     # Sets up an environment to build a Haskell package from the given repo.
     # The step should be one of "configure", "build", "test" or "coverage",
     # which lets us stop early, e.g. "build" will stop after building.
-    compileHaskell = repo: step:
+    compileHaskell = name: repo: step:
       stdenv.mkDerivation {
         inherit step;
         name = "haskell-${step}";
@@ -96,8 +104,8 @@ with rec {
           haskellPackages.happy
           zlib.out
           haskellPackages.cabal-install
-          (haskellPackages.ghcWithPackages (h: map (p: h."${p}")
-                                                   (haskellSrcDeps repo)))
+          haskellPackages.ghc
+          (tincify (getAttr (hsName name) haskellPackages) {})
         ];
         configFlags  = concatStringsSep " " [
           (if step == "coverage"

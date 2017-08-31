@@ -11,10 +11,10 @@ with rec {
   inherit (helpers)
     compileHaskell myHaskell repoOf;
 
-  checkRepo = repo:
+  checkRepo = name: repo:
     stdenv.mkDerivation {
       name         = "haskell-coverage";
-      results      = compileHaskell repo "coverage";
+      results      = compileHaskell name repo "coverage";
       buildInputs  = [ xidel ];
       MINIMUM      = "30";  # Coverage below this % will cause a failure
       buildCommand = ''
@@ -37,7 +37,7 @@ with rec {
       '';
     };
 
-  tests = mapAttrs (_: checkRepo) myHaskell;
+  tests = mapAttrs checkRepo myHaskell;
 };
 
 tests

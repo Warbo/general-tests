@@ -1,18 +1,17 @@
-        { helpers, pkgs }:
-        with pkgs;
-        runCommand "dummy" {} "exit 1"
+{ helpers, pkgs }:
 
-        /*
-#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p haskellPackages.cabal-install
+with pkgs;
+runCommand "panhandle-test"
+  (withNix {
+    buildInputs = [ cabal2nix fail haskellPackages.cabal-install pandoc ];
+    dir         = helpers.inputFallback "panhandle";
+    nixConfig   = helpers.inputFallback "nix-config";
+  })
+  ''
+    export HOME="$PWD"
+    ln -s "$nixConfig" "$HOME/.nixpkgs"
 
-function fail {
-    echo "FAIL $1" 1>&2
-    exit 1
-}
-
-DIR=~/Programming/Haskell/pan-handler
-cd "$DIR" || fail "Couldn't cd to '$DIR'"
-
-./test.sh
-*/
+    cd "$dir"
+    ./test.sh
+    echo "pass" > "$out"
+  ''

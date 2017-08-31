@@ -10,16 +10,16 @@ with rec {
   inherit (helpers)
     allHaskell compileHaskell haskellRepos repoOf;
 
-  testRepo = repo:
+  testRepo = name: repo:
     stdenv.mkDerivation {
       name         = "cabal-test";
-      buildInputs  = [ (compileHaskell repo "test") ];
+      buildInputs  = [ (compileHaskell name repo "test") ];
       buildCommand = ''
         echo "Passed" > "$out"
       '';
     };
 
-  tests = mapAttrs (_: testRepo) allHaskell;
+  tests = mapAttrs testRepo allHaskell;
 };
 
 tests
