@@ -1,15 +1,14 @@
 { helpers, pkgs }:
+
 with pkgs;
-runCommand "dummy" {} "exit 1"
 
-/*
-#!/usr/bin/env bash
-
-function fail {
-    echo "$1" 1>&2
-    exit 1
-}
-
-[[ -e ~/Writing/STP/sites/stp/2015/10/index.md ]] || fail "2015/10 has no index"
-[[ -e ~/Writing/STP/talks/2015/10/slides.md ]]    || fail "2015/10 has no slides"
-*/
+runCommand "have-STP"
+  {
+    buildInputs = [ fail ];
+    dir         = helpers.inputFallback "writing";
+  }
+  ''
+    [[ -e "$dir/STP/sites/stp/2015/10/index.md" ]] || fail "Have no site"
+    [[ -e "$dir/STP/talks/2015/10/slides.md"    ]] || fail "Have no slides"
+    echo pass > "$out"
+  ''

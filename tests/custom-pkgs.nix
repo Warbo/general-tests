@@ -2,84 +2,8 @@
 
 with builtins;
 with rec {
-  inherit (pkgs)
-    bash jq latestGit lib stdenv;
-
-  inherit (lib)
-    attrByPath splitString;
-
-  inherit (helpers)
-    findRepo inputFallback;
-
-  packages = stdenv.mkDerivation {
-    name = "custom-packages";
-    src  = inputFallback "nix-config";
-    buildInputs  = [ jq ];
-    buildCommand = ''
-      set -e
-      echo "[" > "$out"
-      {
-        # "Local" is where we keep "regular" packages
-        for FILE in "$src"/custom/local/*.nix
-        do
-          basename "$FILE" .nix
-        done
-
-        # "Imports" are usually special-cases
-        for FILE in "$src"/custom/imports/*.nix
-        do
-          basename "$FILE" .nix
-        done
-
-        # Haskell packages need prefixing by the compiler version
-        for FILE in "$src"/custom/haskell/*.nix
-        do
-          NAME=$(basename "$FILE" .nix)
-          echo "haskellPackages.$NAME"
-        done
-
-        # One offs (usually overrides)
-        for FILE in "$src"/custom/*.nix
-        do
-          BASE=$(basename "$FILE" .nix)
-          [[ -d "$src/custom/$BASE" ]] || echo "$BASE"
-        done
-      } | jq -R '.' >> "$out"
-      echo "]" >> "$out"
-    '';
-  };
-
-  buildPkg = given:
-    with rec {
-      # Look up attribute in pkgs
-      found = attrByPath (splitString "." given)
-                         (abort "Couldn't find ${given}")
-                         pkgs;
-
-      # If we found a package, use it; otherwise use nothing
-      deps  = if typeOf found != "set"
-                 then []  # Packages must be sets
-                 else if found ? "bash"
-                      then []  # Don't build the whole of nixpkgs
-                      else if found ? executable && found.executable
-                           then []  # Probably a script
-                           else if found ? src
-                                then [ found ]  # Probably a package
-                                else if found ? buildCommand
-                                        then [ found ]  # Probably a package
-                                        else [];        # Probably not a package
-    };
-    stdenv.mkDerivation {
-      name         = "check-pkg";
-      buildInputs  = deps;
-      buildCommand = ''touch "$out"'';
-    };
-
-  tests = listToAttrs (map (p: {
-                             name = p;
-                             value = buildPkg p;
-                           })
-                           (import "${packages}"));
+  src = helpers.inputFallback "nix-config";
+  all = import "${src}/test.nix";
 };
 
-tests
+all.tests
