@@ -16,5 +16,5 @@ with {
 {
   ghc7103 = run { inherit NIX_EVAL_HASKELL_PKGS; };
 
-  haskellPackages = shouldFail (run {});
+  haskellPackages = isBroken (run {});
 }

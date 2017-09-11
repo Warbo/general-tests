@@ -1,14 +1,18 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+runCommand "ai4fm"
+  {
+    buildInputs = [ fail ];
+    writing     = latestGit { url = http://chriswarbo.net/git/writing.git; };
+  }
+  ''
+    set -e
+    cd "$writing/AI4FM" || fail "No AI4FM dir"
 
-/*
-#!/usr/bin/env bash
+    for F in article.tex slides.md
+    do
+      [[ -e "$F" ]] || fail "No $F"
+    done
 
-cd ~/Writing/AI4FM || exit 1
-
-for F in article.tex slides.md
-do
-    [[ -e "$F" ]] || { echo "No $F" 1>&2 ; exit 1; }
-done
-*/
+    echo pass > "$out"
+  ''

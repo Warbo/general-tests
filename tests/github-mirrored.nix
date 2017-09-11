@@ -1,27 +1,20 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+runCommand "github-mirrored" { buildInputs = [ git fail ]; } ''
+  set -e
 
-/*
-#!/usr/bin/env bash
-
-# Pass in the argument "full" to keep going after a failure
-FULL=0
-[[ "x$1" = "xfull" ]] && FULL=1
-
-# Make sure everything in ~/Programming is version controlled
-ERR=0
-for REPO in /home/chris/Programming/repos/*.git
-do
+  # Make sure everything in ~/Programming is version controlled
+  UNMIRRORED=""
+  for REPO in /home/chris/Programming/repos/*.git
+  do
     pushd "$REPO" > /dev/null
     if ! git remote | grep github > /dev/null
     then
-        echo "$REPO is not mirrored on GitHub"
-        ERR=1
-        [[ "$FULL" -eq 1 ]] || exit 1
+        UNMIRRORED="$UNMIRRORED $REPO"
     fi
     popd > /dev/null
-done
+  done
 
-exit "$ERR"
-*/
+  [[ -z "$UNMIRRORED" ]] || fail "No GitHub mirrors for $UNMIRRORED"
+  echo pass > "$out"
+''
