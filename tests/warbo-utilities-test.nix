@@ -1,16 +1,11 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
-
-/*
-#!/usr/bin/env bash
-
-function fail {
-    echo "FAIL: $1" 1>&2
-    exit 1
-}
-
-DIR=~/warbo-utilities
-cd "$DIR" || fail "Couldn't cd to '$DIR'"
-./test.sh
-*/
+runCommand "warbo-utilities"
+  (withNix {
+    utils = latestGit { url = helpers.repoOf "warbo-utilities"; };
+  })
+  ''
+    cd "$utils"
+    ./test.sh
+    echo "pass" > "$out"
+  ''

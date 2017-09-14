@@ -8,7 +8,7 @@ with rec {
     mapAttrs;
 
   inherit (helpers)
-    allHaskell compileHaskell haskellRepos repoOf;
+    compileHaskell haskellRepos myHaskell repoOf;
 
   testRepo = name: repo:
     stdenv.mkDerivation {
@@ -19,7 +19,7 @@ with rec {
       '';
     };
 
-  tests = mapAttrs testRepo allHaskell;
+  tests = mapAttrs testRepo myHaskell;
 };
 
 tests

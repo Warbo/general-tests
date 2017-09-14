@@ -1,9 +1,4 @@
 { pkgs, helpers }:
 
-with builtins;
-with rec {
-  src = helpers.inputFallback "nix-config";
-  all = import "${src}/test.nix";
-};
-
-all.tests
+with { src = helpers.inputFallback "nix-config"; };
+import "${src}/release.nix"

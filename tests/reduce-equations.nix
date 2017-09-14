@@ -1,12 +1,23 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+with rec {
+  repo = helpers.inputFallback "reduce-equations";
+  re   = runCabal2nix { url = "${repo}"; };
+};
+runCommand "reduce-equations"
+  {
+    inherit repo;
+    buildInputs = [ fail jq re ];
+  }
+  ''
+    set -e
+    set -o pipefail
 
-/*
-#!/usr/bin/env bash
-set -e
+    for F in "$repo"/test/data/*.json
+    do
+      reduce-equations < "$F" | jq -es '. | length | . > 0' ||
+        fail "No eqs for $F"
+    done
 
-cd ~/Programming/Haskell/ReduceEquations
-
-./test.sh
-*/
+    echo pass > "$out"
+  ''
