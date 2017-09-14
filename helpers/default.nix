@@ -1,6 +1,6 @@
 # Use this for helper functions, etc. common to many tests
-{ cabal2nix, fail, hackagePackageNames, haskellPackages, latestGit, lib, stdenv,
-  tincify, withNix, writeScript }:
+{ cabal2nix, fail, hackagePackageNames, haskellPackages, latestGit, lib,
+  runCabal2nix, stdenv, tincify, withNix, writeScript }:
 
 with builtins;
 with lib;

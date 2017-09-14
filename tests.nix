@@ -1,8 +1,11 @@
-{ pkgs ? import <nixpkgs> {} }:
+args:
+
+with rec {
+  pkgs    = import ./helpers/nix-config.nix args;
+  helpers = pkgs.callPackage ./helpers {};
+};
+with pkgs.lib;
 with builtins;
-with pkgs;
-with lib;
-with { helpers = callPackage ./helpers {}; };
 
 listToAttrs (map (f: {
                    name  = removeSuffix ".nix" f;

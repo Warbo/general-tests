@@ -1,15 +1,6 @@
-{ pkgs ? import <nixpkgs> {} }:
-with {
-  inherit (pkgs)
-    lib stdenv;
-};
-with lib;
+args:
 
-stdenv.mkDerivation {
-  name         = "tests";
-  buildInputs  = map (t: t.test)
-                     (attrValues (import ./tests.nix { inherit pkgs; }));
-  buildCommand = ''
-    echo "Passed" > "$out"
-  '';
-}
+with { pkgs = import ./helpers/nix-config.nix args; };
+with pkgs;
+withDeps (allDrvsIn (callPackage ./tests.nix args))
+         (runCommand "tests" {} ''echo "pass" > "$out"'')
