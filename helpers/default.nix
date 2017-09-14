@@ -5,16 +5,30 @@
 with builtins;
 with lib;
 rec {
-  getGit = url: latestGit { inherit url; };
+  getGit = url:
+    assert isString url || abort (toJSON {
+      inherit url;
+      message = "getGit URL should be a string";
+    });
+    latestGit { inherit url; };
 
   repoOf = r:
-    let given = getEnv "GIT_REPO_DIR";
-        local = if given == ""
+    with rec {
+      isStore = hasPrefix storeDir r;
+      given   = getEnv "GIT_REPO_DIR";
+      local   = if given == ""
                    then "/home/chris/Programming/repos/${r}.git"
                    else "${given}/${r}.git";
-     in if pathExists local
-           then local
-           else "http://chriswarbo.net/git/${r}.git";
+      exists  = pathExists local;
+      remote  = "http://chriswarbo.net/git/${r}.git";
+      debug   = message: abort (toJSON {
+                  inherit message r;
+                  typeOfR = typeOf r;
+                });
+    };
+    assert isString r || debug "repoOf should be given a string";
+    assert !isStore   || debug "repoOf should not be given store path";
+    if exists then local else remote;
 
   haskellRepos = map repoOf (attrNames allHaskell);
 
@@ -104,7 +118,7 @@ rec {
 
   haskellTinced = repo:
     with rec {
-      haskellDef = import (runCabal2nix { url = getGit (repoOf repo); });
+      haskellDef = import (runCabal2nix { url = repo; });
 
       extras = filter (p: if elem p [ "mkDerivation" "stdenv" ]
                              then false
@@ -123,6 +137,8 @@ rec {
   # The step should be one of "configure", "build", "test" or "coverage",
   # which lets us stop early, e.g. "build" will stop after building.
   compileHaskell = name: repo: step:
+    assert isString     name || abort "compileHaskell name not string: ${name}";
+    assert isDerivation repo || abort "compileHaskell repo not drv:    ${repo}";
     stdenv.mkDerivation (withNix {
       inherit step;
       name         = "haskell-${step}";
