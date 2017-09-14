@@ -1,6 +1,6 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} ''
+runCommand "panhandle" {} ''
   #!/usr/bin/env bash
   set -e
 
@@ -17,7 +17,7 @@ runCommand "dummy" {} ''
   echo "Got JSON '$JSON'"
 
   TICK='`'
-  TICKS="${TICK}${TICK}${TICK}"
+  TICKS="$TICK""$TICK""$TICK"
   UNWRAP=$(printf '%s{.unwrap}\n%s\n%s' "$TICKS" "$JSON" "$TICKS")
   echo "Got unwrap '$UNWRAP'"
 
