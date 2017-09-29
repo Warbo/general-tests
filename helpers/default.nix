@@ -116,72 +116,20 @@ rec {
     };
     if hasAttr repo deps then getAttr repo deps else [];
 
-  haskellTinced = repo:
+  haskellTinced = { haskellPkgs ? haskellPackages, repo }:
     with rec {
       haskellDef = import (runCabal2nix { url = repo; });
 
-      extras = filter (p: if elem p [ "mkDerivation" "stdenv" ]
-                             then false
-                             else if hasAttr p haskellPackages &&
-                                     getAttr p haskellPackages == null
-                                     then false
-                                     else !(elem p hackagePackageNames))
-                      (attrNames (functionArgs haskellDef));
+      extras     = filter (p: if elem p [ "mkDerivation" "stdenv" ]
+                                 then false
+                                 else if hasAttr p haskellPkgs &&
+                                         getAttr p haskellPkgs == null
+                                         then false
+                                         else !(elem p hackagePackageNames))
+                          (attrNames (functionArgs haskellDef));
     };
-    tincify ((haskellPackages.callPackage haskellDef {}) // {
+    tincify ((haskellPkgs.callPackage haskellDef {}) // {
               inherit extras;
-              includeExtras = true;
+              haskellPackages = haskellPkgs;
             }) {};
-
-  # Sets up an environment to build a Haskell package from the given repo.
-  # The step should be one of "configure", "build", "test" or "coverage",
-  # which lets us stop early, e.g. "build" will stop after building.
-  compileHaskell = name: repo: step:
-    assert isString     name || abort "compileHaskell name not string: ${name}";
-    assert isDerivation repo || abort "compileHaskell repo not drv:    ${repo}";
-    stdenv.mkDerivation (withNix {
-      inherit step;
-      name         = "haskell-${step}";
-      src          = repo;
-      buildInputs  = [ cabal2nix fail (haskellTinced repo).env ];
-      configFlags  = concatStringsSep " " [
-        (if step == "coverage"
-            then "--enable-coverage"
-            else "")
-        (if elem step ["test" "coverage"]
-            then "--enable-tests"
-            else "")
-      ];
-      buildCommand = ''
-        set -e
-
-        function succeed {
-          cp -r . "$out"
-          exit
-        }
-
-        export HOME="$PWD"
-
-        echo "Making mutable copy of source" 1>&2
-        cp -r "$src" ./src
-        chmod +w -R ./src
-        cd ./src
-
-        echo "Configuring" 1>&2
-        cabal configure $configFlags || fail "Failed to configure"
-
-        if [[ "x$step" = "xconfigure" ]]
-        then
-          succeed
-        fi
-
-        echo "Building" 1>&2
-        cabal build || fail "Failed to build"
-        [[ "x$step" = "xbuild" ]] && succeed
-
-        echo "Testing" 1>&2
-        cabal test || fail "Failed to test"
-        succeed
-      '';
-    });
 }

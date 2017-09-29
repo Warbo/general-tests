@@ -6,5 +6,5 @@ with rec {
   inherit (helpers) haskellTinced myHaskell;
 };
 
-mapAttrs (_: repo: haskell.lib.doCheck (haskellTinced repo))
+mapAttrs (_: repo: haskell.lib.doCheck (haskellTinced { inherit repo; }))
          myHaskell

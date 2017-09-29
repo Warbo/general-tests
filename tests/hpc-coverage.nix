@@ -3,21 +3,27 @@
 with builtins;
 with rec {
   inherit (pkgs)
-    lib stdenv xidel;
+    lib nixpkgs1703 runCommand xidel;
 
   inherit (lib)
     mapAttrs;
 
   inherit (helpers)
-    compileHaskell myHaskell repoOf;
+    haskellTinced myHaskell;
 
   checkRepo = name: repo:
-    stdenv.mkDerivation {
-      name         = "haskell-coverage";
-      results      = compileHaskell name repo "coverage";
-      buildInputs  = [ xidel ];
-      MINIMUM      = "30";  # Coverage below this % will cause a failure
-      buildCommand = ''
+    runCommand "haskell-coverage-${name}"
+      {
+        results      = with nixpkgs1703.haskell.lib;
+                       doCoverage (doCheck (haskellTinced {
+                         inherit repo;
+                         haskellPkgs = nixpkgs1703.haskell.packages.ghc7103;
+                       }));
+        buildInputs  = [ xidel ];
+        MINIMUM      = "30";  # Coverage below this % will cause a failure
+      }
+      ''
+        set -e
         while read -r HTML
         do
           # Look up % from table, using a tricky XPath query
@@ -35,9 +41,6 @@ with rec {
           echo "Passed" > "$out"
         done < <(find "$results" -name "hpc_index.html")
       '';
-    };
-
-  tests = mapAttrs checkRepo myHaskell;
 };
 
-tests
+mapAttrs checkRepo myHaskell
