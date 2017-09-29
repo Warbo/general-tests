@@ -3,7 +3,7 @@
 with pkgs;
 runCommand "panhandle-test"
   (withNix {
-    buildInputs = [ cabal2nix fail haskellPackages.cabal-install pandoc ];
+    buildInputs = [ cabal2nix fail haskellPackages.cabal-install pandocPkgs ];
     dir         = helpers.inputFallback "panhandle";
     nixConfig   = helpers.inputFallback "nix-config";
   })
