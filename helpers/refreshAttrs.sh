@@ -6,7 +6,7 @@ ERR=../results/attrs.err
 cd "$(dirname "$(readlink -f "$0")")"
 
 function go {
-    nix-instantiate --read-write-mode --eval \
+    nix-instantiate --read-write-mode --show-trace --eval \
                     -E 'import ./testPaths.nix' 2> >(tee "$ERR" 1>&2) |
         jq -r '.'   |
         jq -c '.[]' |

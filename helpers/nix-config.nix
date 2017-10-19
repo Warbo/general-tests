@@ -1,39 +1,21 @@
-{ fetchgit, nix-config ? null, nixpkgs ? null }:
+{ nix-config ? null, nixpkgs ? null }:
 
 with builtins;
 with rec {
-  inherit (withConfig fallbackConfig) latestGit;
-
-  chosenNixpkgs  = if nixpkgs == null then <nixpkgs> else nixpkgs;
-
-  withConfig     = cfg: import chosenNixpkgs {
-    config = import "${cfg}/config.nix";
+  bootPkgs   = config: import <nixpkgs> { inherit config; };
+  bootConfig = (bootPkgs {}).fetchgit {
+    url    = http://chriswarbo.net/git/nix-config.git;
+    rev    = "d1b2b9b";
+    sha256 = "1rsax2izq5083wlxssg0ch4bxkg2g1hm2v61vp8frg5v9q55rlgr";
   };
-
-  configUrl      = http://chriswarbo.net/git/nix-config.git;
-
-  givenConfig    = if nix-config == null then [] else [ nix-config ];
-
-  pathConfig     = with tryEval <nix-config>;
-                   if success then [ value ] else [];
-
-  fallbackConfig = fetchgit {
-    url    = configUrl;
-    rev    = "2cc683b";
-    sha256 = "1xm2jvia4n002jrk055c3csy8qvyjw9h0vilxzss0rb8ik23rn9g";
-  };
-
-  latestConfig   = [ (latestGit { url = configUrl; }) ];
-
-  envConfig      = with { v = getEnv "GIT_REPO_DIR"; };
-                   if v == ""
-                      then []
-                      else [ (latestGit { url = v + "/nix-config.git"; }) ];
-
-  devConfig      = with { v = getEnv "NIX_CONFIG"; };
-                   if v == "" then [] else [ (trace "nix-config is ${v}" v) ];
-
-  chosenConfig   = head (devConfig ++ givenConfig ++ pathConfig ++ envConfig ++
-                         latestConfig);
 };
-withConfig chosenConfig
+
+import (if nixpkgs == null then <nixpkgs> else nixpkgs) {
+  config = if nix-config == null
+              then with tryEval <nix-config>;
+                   if success
+                      then import "${value}/unstable.nix"
+                      else with bootPkgs (import "${bootConfig}/config.nix");
+                           latestNixCfg
+              else import "${nix-config}/unstable.nix";
+}

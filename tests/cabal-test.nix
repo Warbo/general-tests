@@ -1,4 +1,7 @@
-{ pkgs ? import <nixpkgs> {}, helpers ? {} }:
+{
+  pkgs    ? import ../helpers/nix-config.nix {},
+  helpers ? import ../helpers/defs.nix
+}:
 with builtins;
 with rec {
   inherit (pkgs)    haskell lib;

@@ -1,8 +1,7 @@
 with builtins;
-with import <nixpkgs> {};
-with lib;
+with (import <nixpkgs> {}).lib;
 with rec {
-  tests = import ../tests.nix {};
+  inherit (import ../. { packageOnly = false; }) tests;
 
   pathsFrom = prefix: x:
     if isDerivation x
