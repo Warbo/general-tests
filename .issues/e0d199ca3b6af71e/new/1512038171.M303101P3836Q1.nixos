@@ -1,0 +1,29 @@
+From: Chris Warburton
+Date: Thu, 30 Nov 2017 10:13:47 +0000
+State: new
+Subject: Use derivation hash to invalidate results
+Message-Id: <e0d199ca3b6af71e-0-artemis@nixos>
+
+Since each test is a Nix derivation, they each have a hash (i.e. the
+filename of the /nix/store/*.drv file).
+
+We want to invalidate results when changes are made, e.g. to particular
+files/directories or repos. Currently we try to guess when something
+should be invalidated, by comparing repo names to test names; this is
+both tedious and error-prone.
+
+Instead, we can give each test a directory in the 'pass' directory. To
+see if a test needs to run, we get its .drv file (e.g. with
+nix-instantiate) and see if a corresponding symlink exists in the
+relevant 'pass' directory. If so, this derivation has already passed, so
+it doesn't need to re-run.
+
+If no such symlink exists, we run the test (maybe with
+'nix-store --realise' rather than 'nix-build', since we already know the
+.drv at this point), and if successful we put a symlink in the relevant
+pass directory.
+
+We don't need to track whether particular hashes have failed, just mark
+the name as failing (like we already do). If we're asked to run a test,
+we get its hash and find a pass symlink for that hash, then we can
+unconditionally remove the test name from the failed directory.
