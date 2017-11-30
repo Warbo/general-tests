@@ -15,10 +15,10 @@ with rec {
     runCommand "haskell-coverage-${name}"
       {
         results      = with nixpkgs1703.haskell.lib;
-                       doCoverage (doCheck (haskellTinced {
-                         inherit repo;
-                         haskellPkgs = nixpkgs1703.haskell.packages.ghc7103;
-                       }));
+                       /*doCoverage (doCheck (haskellTinced {
+                         inherit*/ repo;
+                         /*haskellPkgs = nixpkgs1703.haskell.packages.ghc7103;
+                       }));*/
         buildInputs  = [ xidel ];
         MINIMUM      = "30";  # Coverage below this % will cause a failure
       }

@@ -8,6 +8,7 @@ runCommand "panhandle-test"
     nixConfig   = helpers.inputFallback "nix-config";
   })
   ''
+    set -e
     export HOME="$PWD"
     ln -s "$nixConfig" "$HOME/.nixpkgs"
 
