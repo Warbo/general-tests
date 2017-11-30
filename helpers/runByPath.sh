@@ -8,9 +8,9 @@ cd "$(dirname "$(dirname "$(readlink -f "$0")")")"
 PTH=$(cat)
 nix-build --show-trace --no-out-link --argstr path "$PTH" \
           -E '{ path }:
-              with import <nixpkgs> {};
-              with lib;
               with builtins;
+              with import ./. { packageOnly = false; };
+              with pkgs.lib;
               attrByPath (fromJSON path)
                          (error (toJSON { inherit path; }))
-                         (import ./tests.nix {})'
+                         tests'

@@ -7,4 +7,4 @@ with rec {
 };
 if packageOnly
    then all
-   else { inherit all tests; }
+   else { inherit all pkgs tests; }
