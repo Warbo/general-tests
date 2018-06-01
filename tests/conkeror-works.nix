@@ -1,12 +1,13 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "conkeror-works"
-  {
-    dotfiles    = latestGit { url = helpers.repoOf "warbo-dotfiles"; };
-    buildInputs = [ xvfb_run conkeror procps ];
-  }
-  ''
-    export HOME="$dotfiles"
+wrap {
+  name   = "conkeror-works";
+  paths  = [ bash coreutils xvfb_run conkeror procps ];
+  vars   = { HOME = latestGit { url = helpers.repoOf "warbo-dotfiles"; }; };
+  script = ''
+    #!/usr/bin/env bash
+    set -e
+
     timeout 30 xvfb-run conkeror "http://google.com" &
     PID="$!"
 
@@ -21,4 +22,5 @@ runCommand "conkeror-works"
     fi
 
     kill "$PID" 1> /dev/null 2> /dev/null
-  ''
+  '';
+}

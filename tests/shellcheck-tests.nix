@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "shellcheck-tests"/*
 with pkgs;
 with rec {
   REAL_HOME = "/home/chris";
@@ -59,3 +60,4 @@ runCommand "dummy"
 
     exit "$ERR"
   ''
+*/

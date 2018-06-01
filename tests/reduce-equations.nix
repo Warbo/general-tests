@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "reduce-equations"/*
 with pkgs;
 with rec {
   repo = helpers.inputFallback "reduce-equations";
@@ -21,3 +22,4 @@ runCommand "reduce-equations"
 
     echo pass > "$out"
   ''
+*/

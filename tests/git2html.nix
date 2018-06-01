@@ -1,6 +1,5 @@
-        { helpers, pkgs }:
-        with pkgs;
-        runCommand "dummy" {} "exit 1"
+{ helpers, pkgs }:
+helpers.notImplemented "git2html"
 
         /*
 #! /usr/bin/env nix-shell

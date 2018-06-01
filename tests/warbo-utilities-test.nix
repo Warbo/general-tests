@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "warbo-utilities-test"/*
 with pkgs;
 runCommand "warbo-utilities"
   (withNix {
@@ -9,3 +10,4 @@ runCommand "warbo-utilities"
     ./test.sh
     echo "pass" > "$out"
   ''
+*/

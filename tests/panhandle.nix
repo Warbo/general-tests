@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "panhandle"/*
 with pkgs;
 runCommand "panhandle" {} ''
   #!/usr/bin/env bash
@@ -35,3 +36,4 @@ runCommand "panhandle" {} ''
 
   echo "pass" > "$out"
 ''
+*/

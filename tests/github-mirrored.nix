@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "github-mirrored"/*
 with pkgs;
 runCommand "github-mirrored" { buildInputs = [ git fail ]; } ''
   set -e
@@ -18,3 +19,4 @@ runCommand "github-mirrored" { buildInputs = [ git fail ]; } ''
   [[ -z "$UNMIRRORED" ]] || fail "No GitHub mirrors for $UNMIRRORED"
   echo pass > "$out"
 ''
+*/

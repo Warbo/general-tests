@@ -1,14 +1,16 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "all-committed"
-  {
-    buildInputs = [ findutils git ];
-  }
-  ''
+wrap {
+  name   = "all-committed";
+  paths  = [ bash fail findutils git ];
+  script = ''
+    #!/usr/bin/env bash
+    set -e
+
     function data {
-      if [[ -e /home/chris/Programming ]]
+      if [[ -e ~/Programming ]]
       then
-        find /home/chris/Programming -type d -name '.git' |
+        find ~/Programming -type d -name '.git' |
           grep -v "/git-html/" |
           grep -v "/ATS/aos"
       fi
@@ -31,6 +33,6 @@ runCommand "all-committed"
       gitClean "$DIR"
     done < <(data)
 
-    [[ "$ERR" -eq 1 ]] || echo "Pass" > "$out"
     exit "$ERR"
-  ''
+  '';
+}

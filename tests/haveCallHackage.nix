@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "have-call-hackage"/*
 with pkgs;
 with {
   boolToDrv = bool: runCommand "bool2drv" {} ''
@@ -13,3 +14,4 @@ with {
   haveCallHackageWhenCustomisationsEnabled = boolToDrv
     ((import <nixpkgs> {}).haskellPackages ? callHackage);
 }
+*/

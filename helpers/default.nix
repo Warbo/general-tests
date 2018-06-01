@@ -1,10 +1,20 @@
 # Use this for helper functions, etc. common to many tests
-{ cabal2nix, fail, hackagePackageNames, haskellPackages, latestGit, lib,
-  runCabal2nix, stdenv, tincify, withNix, writeScript }:
+{ bash, cabal2nix, fail, hackagePackageNames, haskellPackages,
+  haskellPkgWithDeps, latestGit, lib, runCabal2nix, stdenv, withNix, wrap,
+  writeScript }:
 
 with builtins;
 with lib;
 rec {
+  notImplemented = name: wrap {
+    inherit name;
+    paths  = [ bash ];
+    script = ''
+      #!/usr/bin/env bash
+      exit 1
+    '';
+  };
+
   getGit = url:
     assert isString url || abort (toJSON {
       inherit url;
@@ -95,41 +105,22 @@ rec {
     ]
     inputFallback;
 
-  # The Cabal project name for each Haskell repo. Usually this matches the
-  # repo name (e.g. "foo.git" is "foo"), but there are exceptions.
-  hsName =
-    with {
-      overrides = {
-        ast-plugin = "AstPlugin";
-        ml4hsfe    = "ML4HSFE";
-      };
-    };
-    repo: if hasAttr repo overrides
-             then getAttr repo overrides
-             else repo;
-
-  haskellSrcDeps = repo:
+  haskellStandalone = { haskellPkgs ? haskellPackages, repo }:
     with rec {
-      deps = {
-        ml4hsfe = [ "HS2AST" "weigh" ];
-      };
-    };
-    if hasAttr repo deps then getAttr repo deps else [];
+      haskellDef    = import (runCabal2nix { url = repo; });
 
-  haskellTinced = { haskellPkgs ? haskellPackages, repo }:
-    with rec {
-      haskellDef = import (runCabal2nix { url = repo; });
-
-      extras     = filter (p: if elem p [ "mkDerivation" "stdenv" ]
-                                 then false
-                                 else if hasAttr p haskellPkgs &&
-                                         getAttr p haskellPkgs == null
-                                         then false
-                                         else !(elem p hackagePackageNames))
-                          (attrNames (functionArgs haskellDef));
+      extra-sources = filter (p: if elem p [ "mkDerivation" "stdenv" ]
+                                    then false
+                                    else if hasAttr p haskellPkgs &&
+                                            getAttr p haskellPkgs == null
+                                            then false
+                                            else !(elem p hackagePackageNames))
+                             (attrNames (functionArgs haskellDef));
     };
-    tincify ((haskellPkgs.callPackage haskellDef {}) // {
-              inherit extras;
-              haskellPackages = haskellPkgs;
-            }) {};
+    haskellPkgWithDeps {
+      inherit extra-sources;
+      delay-failure = true;
+      dir           = repo;
+      hsPkgs        = haskellPkgs;
+    };
 }

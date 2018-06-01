@@ -1,6 +1,6 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+helpers.notImplemented "documents-referenced"
 
 /*
 #!/usr/bin/env bash

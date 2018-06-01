@@ -1,5 +1,5 @@
 { helpers, pkgs }:
-
+helpers.notImplemented "stp-2015-10"/*
 with pkgs;
 
 runCommand "have-STP"
@@ -12,3 +12,4 @@ runCommand "have-STP"
     [[ -e "$dir/STP/talks/2015/10/slides.md"    ]] || fail "Have no slides"
     echo pass > "$out"
   ''
+*/

@@ -1,6 +1,5 @@
 { helpers, pkgs }:
-with pkgs;
-runCommand "dummy" {} "exit 1"
+helpers.notImplemented "no-backups"
 
 /*
 #!/usr/bin/env bash

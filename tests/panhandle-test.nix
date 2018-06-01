@@ -1,5 +1,5 @@
 { helpers, pkgs }:
-
+helpers.notImplemented "panhandle-test"/*
 with pkgs;
 runCommand "panhandle-test"
   (withNix {
@@ -16,3 +16,4 @@ runCommand "panhandle-test"
     ./test.sh
     echo "pass" > "$out"
   ''
+*/

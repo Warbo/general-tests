@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "withlatestgit-test"/*
 with pkgs;
 runCommand "dummy" {} ''
   #!/usr/bin/env bash
@@ -58,3 +59,4 @@ runCommand "dummy" {} ''
   echo "Looks OK" 1>&2
   echo "pass" > "$out"
 ''
+*/

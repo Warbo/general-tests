@@ -1,18 +1,16 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "ai4fm"
-  {
-    buildInputs = [ fail ];
-    writing     = latestGit { url = http://chriswarbo.net/git/writing.git; };
-  }
-  ''
+wrap {
+  name   = "ai4fm";
+  paths  = [ bash fail ];
+  script = ''
+    #!/usr/bin/env bash
     set -e
-    cd "$writing/AI4FM" || fail "No AI4FM dir"
+    cd ~/Writing/AI4FM || fail "No AI4FM dir"
 
     for F in article.tex slides.md
     do
       [[ -e "$F" ]] || fail "No $F"
     done
-
-    echo pass > "$out"
-  ''
+  '';
+}

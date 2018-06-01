@@ -1,4 +1,5 @@
 { pkgs ? import <nixpkgs> {}, helpers ? {} }:
+helpers.notImplemented "hlint"/*
 with builtins;
 with {
 
@@ -71,3 +72,4 @@ tests = (mapAttrs (_: testRepo) myHaskell) //
 };
 
 tests
+*/

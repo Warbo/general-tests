@@ -1,4 +1,5 @@
 { pkgs, helpers }:
 
 with { src = helpers.inputFallback "nix-config"; };
-import "${src}/release.nix"
+helpers.notImplemented "custom-pkgs"
+#import "${src}/release.nix"

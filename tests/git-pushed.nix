@@ -1,6 +1,5 @@
 { helpers, pkgs }:
-with pkgs;
-runCommand "dummy" {} "exit 1"
+helpers.notImplemented "git-pushed"
 
 /*
 #!/usr/bin/env bash

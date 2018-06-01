@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "runtime-arbitrary-tests"/*
 with pkgs;
 with {
   NIX_EVAL_HASKELL_PKGS = writeScript "ghc7.10-for-nix-eval.nix" ''
@@ -18,3 +19,4 @@ with {
 
   haskellPackages = isBroken (run {});
 }
+*/

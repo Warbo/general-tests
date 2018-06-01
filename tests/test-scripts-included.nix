@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "test-scripts-included"/*
 with pkgs;
 runCommand "dummy" {} ''
   #!/usr/bin/env bash
@@ -99,3 +100,4 @@ runCommand "dummy" {} ''
 
   echo "pass" > "$out"
 ''
+*/

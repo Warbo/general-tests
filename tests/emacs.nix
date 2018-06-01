@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "emacs"/*
 with pkgs;
 runCommand "emacs"
   {
@@ -12,3 +13,4 @@ runCommand "emacs"
     chmod +w -R "$HOME/.emacs.d"
     "$HOME/.emacs.d/test-runner.sh"
   ''
+*/

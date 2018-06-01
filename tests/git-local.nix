@@ -1,6 +1,5 @@
-        { helpers, pkgs }:
-        with pkgs;
-        runCommand "dummy" {} "exit 1"
+{ helpers, pkgs }:
+helpers.notImplemented "git-local"
 
         /*
 #! /usr/bin/env nix-shell

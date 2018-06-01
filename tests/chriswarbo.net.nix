@@ -4,4 +4,8 @@ with rec {
   src = helpers.inputFallback "chriswarbo-net";
   all = import "${src}";
 };
-all.tests
+pkgs.wrap { name = "dummy"; script = ''
+  #!/usr/bin/env bash
+  exit 1
+''; }
+#all.tests

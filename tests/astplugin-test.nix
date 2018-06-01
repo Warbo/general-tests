@@ -1,6 +1,13 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "dummy" {} "exit 1"
+wrap {
+  name   = "astplugin-test";
+  vars   = {};
+  script = ''
+    #!/usr/bin/env bash
+    exit 1
+  '';
+}
 
 /*
 #!/usr/bin/env bash

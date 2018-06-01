@@ -1,6 +1,5 @@
 { helpers, pkgs }:
-with pkgs;
-runCommand "dummy" {} "exit 1"
+helpers.notImplemented "lazysmallcheck2012"
 
 /*
 #!/usr/bin/env bash

@@ -6,8 +6,20 @@ with builtins;
 with rec {
   inherit (pkgs)    haskell lib;
   inherit (lib)     mapAttrs;
-  inherit (helpers) haskellTinced myHaskell;
+  inherit (helpers) haskellStandalone myHaskell;
 };
-
-#mapAttrs (_: repo: haskell.lib.doCheck (haskellTinced { inherit repo; }))
-         myHaskell
+with pkgs;
+wrap {
+  name  = "cabal-test";
+  paths = [ bash ];
+  /*vars = mapAttrs (_: repo:
+                    with { pkg = haskellStandalone { inherit repo; }; };
+                    if pkg ? override
+                       then haskell.lib.doCheck pkg  # Probably a Haskell package
+                       else pkg)                     # Probably a delayed failure
+         myHaskell;*/
+  script = ''
+    #!/usr/bin/env bash
+    exit 1
+  '';
+}

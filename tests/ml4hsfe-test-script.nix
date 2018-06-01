@@ -1,6 +1,5 @@
 { helpers, pkgs }:
-with pkgs;
-runCommand "dummy" {} "exit 1"
+helpers.notImplemented "ml4hs-test-script"
 
 /*
 #!/usr/bin/env bash

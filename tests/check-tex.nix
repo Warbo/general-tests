@@ -1,8 +1,15 @@
 { helpers, pkgs }:
 with pkgs;
-runCommand "check-tex" {}
-  ''
-    DIR="/home/chris/Documents/ArchivedPapers"
+wrap {
+  name  = "check-tex";
+  paths = [ bash bibclean bibtool ];
+  vars  = {
+    BIB = "/home/chris/Writing/Bibtex.bib";
+    DIR = "/home/chris/Documents/ArchivedPapers";
+  };
+  script = ''
+    #!/usr/bin/env bash
+    set -e
 
     function exists {
       if [[ -e "$1" ]]
@@ -32,9 +39,6 @@ runCommand "check-tex" {}
     }
 
     echo "Checking localfiles exist"
-
-    BIB="/home/chris/Writing/Bibtex.bib"
-
     exists "$BIB"
 
     while read -r FILE
@@ -62,8 +66,7 @@ runCommand "check-tex" {}
 
     echo "Trying bibclean"
 
-    RAWBIB=$(nix-shell -p bibclean \
-                       --run "bibclean -output-file /dev/null 2>&1 < $BIB") || {
+    RAWBIB=$(bibclean -output-file /dev/null 2>&1 < $BIB") || {
       echo "bibclean exited with code '$?'" 1>&2
       echo "RAWBIB: $RAWBIB" 1>&2
       exit 1
@@ -89,7 +92,7 @@ runCommand "check-tex" {}
 
     echo "Trying bibtool"
 
-    RAWBIB=$(nix-shell -p bibtool --run "bibtool < $BIB 2>&1 1> /dev/null") || {
+    RAWBIB=$(bibtool < $BIB 2>&1 1> /dev/null) || {
       echo "bibtool exited with code $?" 1>&2
       echo "$RAWBIB" 1>&2
       exit 1
@@ -145,4 +148,5 @@ runCommand "check-tex" {}
     lacheck
     ChkTeX
     "http://www.ctan.org/tex-archive/support/check/"
-''
+  '';
+}

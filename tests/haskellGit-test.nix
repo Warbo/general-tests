@@ -1,4 +1,5 @@
 { helpers, pkgs }:
+helpers.notImplemented "haskellGit-test"/*
 with pkgs;
 
 {
@@ -73,3 +74,4 @@ with pkgs;
       echo "pass" > "$out"
     '';
 }
+*/

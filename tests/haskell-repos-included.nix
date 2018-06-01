@@ -1,5 +1,5 @@
 { pkgs, helpers }:
-
+helpers.notImplemented "haskell-repos-included"/*
 with builtins;
 with {
   inherit (pkgs)
@@ -17,12 +17,12 @@ with rec {
     buildCommand = ''
       function repos {
         wget -O- 'http://chriswarbo.net/git' |
-          grep -o '<a .*</a>'                |
-          grep -o 'href=".*/"'               |
-          grep -v '\.git/"'                  |
-          grep -o '".*"'                     |
-          grep -o '[^"/]*'
-      }
+          grep -o '<a .*</a>'                |*/
+#          grep -o 'href=".*/"'               |
+#          grep -v '\.git/"'                  |
+#          grep -o '".*"'                     |
+#          grep -o '[^"/]*'
+/*      }
 
       function haskellRepos {
         while read -r REPO
@@ -86,3 +86,4 @@ test = stdenv.mkDerivation {
   '';
 };
 }
+*/
