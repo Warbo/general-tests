@@ -5,7 +5,16 @@ with { pkgs = import ./helpers/nix-config.nix { inherit nix-config nixpkgs; }; }
 with pkgs;
 with lib;
 with rec {
-  tests = import ./tests.nix { inherit pkgs; };
+  helpers = callPackage ./helpers {};
+
+  tests   = listToAttrs (map (f: {
+                               name  = removeSuffix ".nix" f;
+                               value = import (./tests + "/${f}") {
+                                 inherit helpers pkgs;
+                               };
+                             })
+                             (attrNames (readDir ./tests)));
+
   all   = wrap {
       name   = "test-runner";
       paths  = [ bash jq ];
