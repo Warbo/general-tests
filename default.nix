@@ -1,11 +1,12 @@
 { nix-config ? null, nixpkgs ? null, packageOnly ? true }:
 
+with builtins;
+with { pkgs = import ./helpers/nix-config.nix { inherit nix-config nixpkgs; }; };
+with pkgs;
+with lib;
 with rec {
-  pkgs  = import ./helpers/nix-config.nix { inherit nix-config nixpkgs; };
-  tests = import ./tests.nix              { inherit pkgs; };
-  all   =
-    with builtins; with pkgs;
-    wrap {
+  tests = import ./tests.nix { inherit pkgs; };
+  all   = wrap {
       name   = "test-runner";
       paths  = [ bash jq ];
       vars   = {
@@ -52,4 +53,4 @@ with rec {
 };
 if packageOnly
    then all
-   else { inherit all pkgs tests; }
+   else { inherit all tests; }
