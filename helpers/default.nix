@@ -1,7 +1,7 @@
 # Use this for helper functions, etc. common to many tests
-{ bash, cabal2nix, fail, hackagePackageNames, haskellPackages,
-  haskellPkgWithDeps, latestGit, lib, runCabal2nix, stdenv, withNix, wrap,
-  writeScript }:
+{ bash, cabal2nix, die, fail, file, findutils, hackagePackageNames,
+  haskellPackages, haskellPkgWithDeps, latestGit, lib, repoSource, runCabal2nix,
+  runCommand, stdenv, utillinux, withNix, wrap, writeScript }:
 
 with builtins;
 with lib;
@@ -123,4 +123,21 @@ rec {
       dir           = repo;
       hsPkgs        = haskellPkgs;
     };
+  myShellscripts = import (runCommand "my_shellscripts"
+    {
+      inherit findIgnoringPermissions HOME;
+      buildInputs = [ file utillinux ];
+      cacheBust = toString (currentTime / 3600);
+      script    = ./my_shellscripts.sh;
+    }
+    ''
+      echo '{' > "$out"
+        "$script" | while read -r S
+        do
+          N=$(basename "$S")
+          H=$(echo     "$S" | sha256sum | cut -d ' ' -f1)
+          echo "\"$H-$N\" = \"$S\";"
+        done >> "$out"
+      echo '}' >> "$out"
+    '');
 }
