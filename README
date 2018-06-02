@@ -5,31 +5,36 @@ possible; like a poor man's continuous integration server.
 
 ## Architecture ##
 
-Tests are defined in the Nix files in tests/ and run by calling ./run.
+Tests are defined in the `*.nix` files in `tests/` (except for
+`tests/default.nix`). Each test is a Nix derivation which produces a script:
+running that script runs the test. Each file in `tests/` can either define a
+single test or an attrset of tests (nested to arbitrary depth).
 
-The release.nix file allows testing on the Hydra continuous integration server.
+For example, `tests/hlint.nix` defines an attrset, where each value is a script
+for running hlint on a different Haskell project.
 
-Each test file can define either a derivation, or a (possibly nested) set of
-derivations. Each of these derivations is a test, and is identified using the
-"path" (lists of keys) which leads to it.
+## Running ##
 
-A list of all test paths is in results/attrs.json (stderr from getting these is
-in results/attrs.err).
+The top-level `default.nix` file defines a script which runs all of these tests,
+counts passes/fails and writes output to `/tmp` suitable for embedding in
+`xmobar`. To build this wrapper script, just run `nix-build` in the top-level
+directory: the path to the resulting script will be printed on stdout, and a
+symlink called `result` will also point to it. Running that script will invoke
+the whole test suite.
 
-A test passes when it builds successfully. Passing tests get an entry in
-results/pass/; failing tests get one in results/fail/. The stdout and stderr
-of each test run is written to results/stdout/ and results/stderr/.
+The advantage to this two step build-then-run approach is that we can have the
+build step perform some time-consuming tasks, like using `find` to look for
+shell scripts, git repos, etc. and generate test scripts based on the results.
+Once they're built, we can run those scripts again and again without having to
+perform the slow tasks again. When we want to "flush the cache" we just run
+`nix-build` to generate new scripts.
 
-## Usage ##
+For convenience, the included `run` script will build and run the test suite.
 
-Most usage is via ./run, which will run all tests. Note that some test results
-may be cached by Nix, so this isn't as expensive as it sounds.
+## Extras ##
 
-### Modes ###
-
-By default, all tests are run. By setting the MODE env var to `failed`, only
-those with entries in results/fail will be run. By setting MODE to `given` and
-setting the GIVEN env var to a JSON array of paths, only the tests identified by
-those paths will be run.
-
-The `jq` command is useful for manipulating JSON.
+The `release.nix` file allows tests to be run on the Hydra continuous
+integration server. This is nice to have, but some tests only make sense on my
+development machine; for example `tests/all-committed.nix` checks that my git
+repositories don't contain any uncommitted things. This wouldn't make sense on a
+continuous integration server, since it will *only* see committed things.
