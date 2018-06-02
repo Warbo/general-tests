@@ -20,7 +20,7 @@ rec {
       inherit url;
       message = "getGit URL should be a string";
     });
-    latestGit { inherit url; };
+    latestGit { inherit url; stable = { unsafeSkip = true; }; };
 
   repoOf = r:
     with rec {
