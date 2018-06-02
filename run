@@ -4,7 +4,7 @@ BASE=$(dirname "$(readlink -f "$0")")
 cd "$BASE"
 
 echo "Building test runner" 1>&2
-F=$(nix-build)
+F=$(nix-build --show-trace)
 
 echo "Running tests" 1>&2
 "$F"
