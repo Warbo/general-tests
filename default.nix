@@ -9,24 +9,12 @@ with lib;
 with rec {
   helpers = callPackage ./helpers {};
 
-  tests   = listToAttrs (map (f: {
-                               name  = removeSuffix ".nix" f;
-                               value = import (./tests + "/${f}") {
-                                 inherit helpers pkgs;
-                               };
-                             })
-                             (attrNames (readDir ./tests)));
+  tests   = import ./tests { inherit helpers pkgs; };
 
   all = wrap {
     name   = "test-runner";
     paths  = [ bash jq ];
-    vars   = {
-      tests = attrsToDirs (listToAttrs (map (d: {
-                                              inherit (d) name;
-                                              value = d;
-                                            })
-                                            (allDrvsIn tests)));
-    };
+    vars   = { tests = attrsToDirs tests; };
     script = ''
       #!/usr/bin/env bash
       set -e
