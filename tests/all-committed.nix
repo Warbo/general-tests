@@ -36,18 +36,20 @@ with {
   check = name: repo: wrap {
     name   = "all-committed-${name}";
     paths  = [ bash fail git ];
-    vars   = {
-      inherit repo;
-      msg = "nothing to commit, working directory clean";
-    };
+    vars   = { inherit repo; };
     script = ''
       #!/usr/bin/env bash
       set -e
 
-      [[ -e "$repo"      ]] || fail "Repo '$repo' doesn't exist"
-      cd "$repo"            || fail "Couldn't cd to '$repo'"
-      S=$(git status)       || fail "Couldn't get status of '$repo'"
-      [[ "$S" = *"$msg"* ]] || fail "Uncommited things in '$repo'"
+      function check {
+        echo "$1" |
+          grep "nothing to commit, working directory clean" > /dev/null
+      }
+
+      [[ -e "$repo" ]] || fail "Repo '$repo' doesn't exist"
+      cd "$repo"       || fail "Couldn't cd to '$repo'"
+      S=$(git status)  || fail "Couldn't get status of '$repo'"
+      check "$S"       || fail "Uncommited things in '$repo'"
     '';
   };
 };
