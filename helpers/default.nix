@@ -23,22 +23,13 @@ rec {
     latestGit { inherit url; stable = { unsafeSkip = true; }; };
 
   repoOf = r:
-    with rec {
+    with {
       isStore = hasPrefix storeDir r;
-      given   = getEnv "GIT_REPO_DIR";
-      local   = if given == ""
-                   then "/home/chris/Programming/repos/${r}.git"
-                   else "${given}/${r}.git";
-      exists  = pathExists local;
-      remote  = "http://chriswarbo.net/git/${r}.git";
-      debug   = message: abort (toJSON {
-                  inherit message r;
-                  typeOfR = typeOf r;
-                });
+      debug   = message: die { inherit message r; typeOfR = typeOf r; };
     };
     assert isString r || debug "repoOf should be given a string";
     assert !isStore   || debug "repoOf should not be given store path";
-    if exists then local else remote;
+    "${repoSource}/${r}.git";
 
   haskellRepos = map repoOf (attrNames allHaskell);
 
