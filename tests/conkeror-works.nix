@@ -3,7 +3,7 @@ with pkgs;
 wrap {
   name   = "conkeror-works";
   paths  = [ bash coreutils xvfb_run conkeror procps ];
-  vars   = { HOME = latestGit { url = helpers.repoOf "warbo-dotfiles"; }; };
+  vars   = { HOME = helpers.inputFallback "warbo-dotfiles"; };
   script = ''
     #!/usr/bin/env bash
     set -e
