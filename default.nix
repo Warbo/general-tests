@@ -40,11 +40,11 @@ with rec {
 
       if [[ "$FAIL" -eq 0 ]]
       then
-        echo "<fc=#ff0000>$SUCCESS/$COUNT</fc>" > /tmp/test_results
+        echo "<fc=#00FF00>$SUCCESS/$COUNT</fc>" > /tmp/test_results
         echo "$SUCCESS/$COUNT Test suite finished successfully" 1>&2
         exit 0
       else
-        echo "<fc=#00FF00>$SUCCESS/$COUNT</fc>" > /tmp/test_results
+        echo "<fc=#FF0000>$SUCCESS/$COUNT</fc>" > /tmp/test_results
         echo "$SUCCESS/$COUNT Test suite encountered failures" 1>&2
         exit "$FAIL"
       fi
