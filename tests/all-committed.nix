@@ -42,8 +42,7 @@ with {
       set -e
 
       function check {
-        echo "$1" |
-          grep "nothing to commit, working directory clean" > /dev/null
+        echo "$1" | grep "nothing to commit" > /dev/null
       }
 
       [[ -e "$repo" ]] || fail "Repo '$repo' doesn't exist"
