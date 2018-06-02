@@ -1,38 +1,54 @@
 { helpers, pkgs }:
+with builtins;
 with pkgs;
-wrap {
-  name   = "all-committed";
-  paths  = [ bash fail findutils git ];
-  script = ''
-    #!/usr/bin/env bash
-    set -e
+with lib;
+with {
+  repos = import (runCommand "git-repos.nix"
+    { inherit (helpers) findIgnoringPermissions HOME; }
+    ''
+      function repos {
+        for D in Programming warbo-utilities nix-config System/Tests
+        do
+          D="$HOME/$D"
+          [[ -e "$D" ]] || continue
 
-    function data {
-      if [[ -e ~/Programming ]]
-      then
-        find ~/Programming -type d -name '.git' |
-          grep -v "/git-html/" |
-          grep -v "/ATS/aos"
-      fi
-    }
+          "$findIgnoringPermissions" "$D" -type d -name '.git' |
+            grep -v "/git-html/" |
+            grep -v "/ATS/aos"
+        done
+      }
 
-    function gitClean {
-      if ! git status | grep "nothing to commit, working directory clean" > /dev/null
-      then
-        ERR=1
-        echo "Uncommited things in '$1'" 1>&2
-      fi
-    }
+      function entries {
+        while read -r REPO
+        do
+           DIR=$(dirname "$REPO")
+          NAME=$(basename "$DIR")
+          HASH=$(echo "$DIR" | sha256sum | cut -d ' ' -f1)
+          echo "\"$HASH-$NAME\" = \"$DIR\";"
+        done < <(repos)
+      }
 
-    ERR=0
-    while IFS= read -r REPO
-    do
-      DIR=$(dirname "$REPO")
-      [[ -e "$DIR" ]] || continue
-      cd "$DIR" || { ERR=1; continue; }
-      gitClean "$DIR"
-    done < <(data)
+      echo '{'   > "$out"
+        entries >> "$out"
+      echo '}'  >> "$out"
+    '');
 
-    exit "$ERR"
-  '';
-}
+  check = name: repo: wrap {
+    name   = "all-committed-${name}";
+    paths  = [ bash fail git ];
+    vars   = {
+      inherit repo;
+      msg = "nothing to commit, working directory clean";
+    };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+
+      [[ -e "$repo"      ]] || fail "Repo '$repo' doesn't exist"
+      cd "$repo"            || fail "Couldn't cd to '$repo'"
+      S=$(git status)       || fail "Couldn't get status of '$repo'"
+      [[ "$S" = *"$msg"* ]] || fail "Uncommited things in '$repo'"
+    '';
+  };
+};
+mapAttrs check repos
