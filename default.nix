@@ -27,13 +27,14 @@ with rec {
       do
         COUNT=$(( COUNT + 1 ))
         NAME=$(basename "$T")
+        printf 'Running %s...' "$T"
         if "$T" 1> /dev/null 2> /dev/null
         then
           SUCCESS=$(( SUCCESS + 1 ))
-          echo "ok - $T"
+          echo "PASS"
         else
           FAIL=$(( FAIL + 1 ))
-          echo "not ok - $T"
+          echo "FAIL"
         fi
       done
 
