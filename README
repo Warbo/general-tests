@@ -31,6 +31,22 @@ perform the slow tasks again. When we want to "flush the cache" we just run
 
 For convenience, the included `run` script will build and run the test suite.
 
+## Debugging ##
+
+The top-level script prints out the path to each test script as it goes. To
+investigate why a particular test is failing, just run it individually to see
+the stdout, stderr and exit code.
+
+There are two ways to find an individual test without running the whole suite.
+One way is to look at the env vars defined in the top-level script, which
+include the directory storing the generated test scripts.
+
+Another way is to look in the Nix derivations, for example using the `nix-repl`
+command. The top-level `default.nix` file takes a `packageOnly` parameter,
+defaulting to `true`: when this is `true` only the top-level script is produced;
+when `false` it returns an attrset containing the top-level script, all of the
+individual test derivations and the utilities from `helpers/`.
+
 ## Extras ##
 
 The `release.nix` file allows tests to be run on the Hydra continuous
