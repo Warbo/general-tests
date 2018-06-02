@@ -123,6 +123,25 @@ rec {
       dir           = repo;
       hsPkgs        = haskellPkgs;
     };
+
+  HOME = if pathExists /home/chris
+    then "/home/chris"
+    else "/homeless-shelter";
+
+  findIgnoringPermissions = wrap {
+    name   = "find-ignoring-permissions";
+    paths  = [ bash findutils ];
+    script = ''
+      #!/usr/bin/env bash
+
+      function ignorePermission {
+        grep -v 'Permission denied$' || true
+      }
+
+      find "$@" 2> >(ignorePermission 1>&2) || true
+    '';
+  };
+
   myShellscripts = import (runCommand "my_shellscripts"
     {
       inherit findIgnoringPermissions HOME;
