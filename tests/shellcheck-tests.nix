@@ -24,4 +24,4 @@ with {
     '';
   };
 };
-mapAttrs' check helpers.myShellscripts
+mapAttrs check helpers.myShellscripts
