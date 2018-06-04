@@ -150,4 +150,53 @@ rec {
         done >> "$out"
       echo '}' >> "$out"
     '');
+
+  # Local clones of git repositories. Each is a string containing the path to a
+  # working directory. These are useful for checks which aren't possible using
+  # fetchgit, e.g. looking for unpushed commits or unstaged changes.
+  localRepos = import (runCommand "git-repos.nix"
+    {
+      inherit findIgnoringPermissions HOME;
+      cacheBuster = toString (currentTime / 3600);
+    }
+    ''
+      function repos {
+        for D in Programming warbo-utilities nix-config System/Tests
+        do
+          D="$HOME/$D"
+          [[ -e "$D" ]] || continue
+
+          "$findIgnoringPermissions" "$D" -type d -name '.git' |
+          grep -v "/git-html/" |
+          grep -v "/ATS/aos"
+        done
+      }
+
+      function entries {
+        while read -r REPO
+        do
+          DIR=$(dirname "$REPO")
+          NAME=$(basename "$DIR")
+          HASH=$(echo "$DIR" | sha256sum | cut -d ' ' -f1)
+          echo "\"$HASH-$NAME\" = \"$DIR\";"
+        done < <(repos)
+      }
+
+      echo '{'   > "$out"
+        entries >> "$out"
+      echo '}'  >> "$out"
+    '');
+
+  myRepos = import (runCommand "my-repos.nix" { inherit HOME; } ''
+    shopt -s nullglob
+
+    echo '{' > "$out"
+      for D in "$HOME"/Programming/repos/*.git
+      do
+        NAME=$(basename "$D" .git)
+        HASH=$(echo "$D" | sha256sum | cut -d ' ' -f1)
+        echo "\"$HASH-$NAME\" = \"$D\";" >> "$out"
+      done
+    echo '}' >> "$out"
+  '');
 }

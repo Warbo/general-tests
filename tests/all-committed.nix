@@ -3,36 +3,6 @@ with builtins;
 with pkgs;
 with lib;
 with {
-  repos = import (runCommand "git-repos.nix"
-    { inherit (helpers) findIgnoringPermissions HOME; }
-    ''
-      function repos {
-        for D in Programming warbo-utilities nix-config System/Tests
-        do
-          D="$HOME/$D"
-          [[ -e "$D" ]] || continue
-
-          "$findIgnoringPermissions" "$D" -type d -name '.git' |
-            grep -v "/git-html/" |
-            grep -v "/ATS/aos"
-        done
-      }
-
-      function entries {
-        while read -r REPO
-        do
-           DIR=$(dirname "$REPO")
-          NAME=$(basename "$DIR")
-          HASH=$(echo "$DIR" | sha256sum | cut -d ' ' -f1)
-          echo "\"$HASH-$NAME\" = \"$DIR\";"
-        done < <(repos)
-      }
-
-      echo '{'   > "$out"
-        entries >> "$out"
-      echo '}'  >> "$out"
-    '');
-
   check = name: repo: wrap {
     name   = "all-committed-${name}";
     paths  = [ bash fail git ];
@@ -52,4 +22,4 @@ with {
     '';
   };
 };
-mapAttrs check repos
+mapAttrs check helpers.localRepos
