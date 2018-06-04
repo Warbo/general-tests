@@ -62,36 +62,40 @@ function skipExt {
 }
 
 function skip {
-    grep -v -e '/\.git'                                   \
-            -e '/\.svn'                                   \
-            -e '/NotMine/'                                \
-            -e 'Tests/results/'                           \
-            -e '/test-data/'                              \
-            -e '/git-html'                                \
-            -e '/Programming/repos/'                      \
-            -e '/haskell-te/cache/'                       \
-            -e '\.nix$'                                   \
-            -e '\.lyx$'                                   \
-            -e '\.agda.*$'                                \
-            -e '\.hs$'                                    \
-            -e '\.png$'                                   \
-            -e '\.html$'                                  \
-            -e '\.c$'                                     \
-            -e '\.o$'                                     \
-            -e '\.h$'                                     \
-            -e '\.cpp$'                                   \
-            -e '\.py.*$'                                  \
-            -e '\.deb$'                                   \
-            -e '\.gz$'                                    \
-            -e '\.txt$'                                   \
-            -e '\.v.*$'                                   \
-            -e '\.lhs$'                                   \
-            -e '\.rb$'                                    \
-            -e '\.ps$'                                    \
-            -e '\.php$'                                   \
-            -e '\.pl$'                                    \
-            -e '\.md$'                                    \
-            -e '\.conf$'
+    grep -v -e '/git-html'           \
+            -e '/haskell-te/cache/'  \
+            -e '/NotMine/'           \
+            -e '/Programming/repos/' \
+            -e '/test-data/'         \
+            -e '/Tests/results/'     \
+            -e '/.asv'               \
+            -e '/\.git'              \
+            -e '/\.svn'              \
+            -e '\.agda.*$'           \
+            -e '\.c$'                \
+            -e '\.conf$'             \
+            -e '\.cpp$'              \
+            -e '\.deb$'              \
+            -e '\.gz$'               \
+            -e '\.h$'                \
+            -e '\.hs$'               \
+            -e '\.html$'             \
+            -e '\.lhs$'              \
+            -e '\.lyx$'              \
+            -e '\.md$'               \
+            -e '\.nix$'              \
+            -e '\.o$'                \
+            -e '\.php$'              \
+            -e '\.pl$'               \
+            -e '\.png$'              \
+            -e '\.ps$'               \
+            -e '\.py.*$'             \
+            -e '\.rb$'               \
+            -e '\.rkt$'              \
+            -e '\.sample$'           \
+            -e '\.txt$'              \
+            -e '\.v.*$'              \
+
 }
 
 function ext {
@@ -105,6 +109,7 @@ do
     if [[ -d "$D" ]]
     then
         echo "Looking for shell scripts in '$D'" 1>&2
+        # shellcheck disable=SC2154
         "$findIgnoringPermissions" "$D" -type f           \
                                       ! -path '*.git*'    \
                                       ! -path '*.svn*'    \

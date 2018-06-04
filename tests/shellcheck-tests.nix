@@ -13,7 +13,7 @@ with {
 
       [[ -e "$REAL_HOME" ]] && export HOME="$REAL_HOME"
 
-      [[ -f "$shellScript" ]] || fail "Script '$shellScript' doesn't not found"
+      [[ -f "$shellScript" ]] || fail "Script '$shellScript' wasn't not found"
       echo "Checking '$shellScript'" 1>&2
       if shellcheck -e SC1091 -e SC1008 -e SC2001 -e SC2029 "$shellScript"
       then
