@@ -1,47 +1,56 @@
 { pkgs, helpers }:
-helpers.notImplemented "hpc-coverage"/*
+
 with builtins;
-with rec {
-  inherit (pkgs)
-    lib nixpkgs1703 runCommand xidel;
+with pkgs;
+with lib;
+with {
+  checkRepo = pkgName: repo: wrap {
+    name  = "haskell-coverage-${pkgName}";
+    paths = [ bash cabal-install2 fail findutils xidel ];
+    vars  = {
+      inherit pkgName repo;
+      MINIMUM = "30";  # Coverage below this % will cause a failure
+    };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
 
-  inherit (lib)
-    mapAttrs;
-
-  inherit (helpers)
-    haskellStandalone myHaskell;
-
-  checkRepo = name: repo:
-    runCommand "haskell-coverage-${name}"
-      {
-        results      = with nixpkgs1703.haskell.lib;
-                       doCoverage (doCheck (haskellStandalone {
-                         inherit repo;
-                         haskellPkgs = nixpkgs1703.haskell.packages.ghc7103;
-                       }));
-        buildInputs  = [ xidel ];
-        MINIMUM      = "30";  # Coverage below this % will cause a failure
+      D=$(mktemp -d --tmpdir 'test-hpc-coverage-$pkgName-XXXXX')
+      function cleanup {
+        rm -rf "$D" || true
       }
-      ''
-        set -e
-        while read -r HTML
-        do
-          # Look up % from table, using a tricky XPath query
-          TOTAL='th[contains(text(),"Program Coverage Total")]'
-          PERCENT='following-sibling::td[1]/text()'
-          RAW=$(xidel - --extract "//$TOTAL/$PERCENT" < "$HTML")
+      trap cleanup EXIT
 
-          echo "File '$HTML' has coverage '$RAW', requires $MINIMUM" 1>&2
+      cd "$D" || fail "Couldn't cd to temp dir '$D'"
 
-          # Remove % for comparison. 0 is denoted "-", so switch that out.
-          RESULT=$(echo "$RAW" | tr -d '%' | tr - 0)
+      cp -r "$repo" ./src
+      chmod +w -R   ./src
+      cd            ./src
+      cabal new-test --enable-library-coverage || fail "Cabal failed"
 
-          # Check against minimum
-          [[ "$RESULT" -lt "$MINIMUM" ]] && exit 1
-          echo "Passed" > "$out"
-        done < <(find "$results" -name "hpc_index.html")
-      '';
+      FOUND=0
+      while read -r HTML
+      do
+        FOUND=1
+
+        # Look up % from table, using a tricky XPath query
+        TOTAL='th[contains(text(),"Program Coverage Total")]'
+        PERCENT='following-sibling::td[1]/text()'
+        RAW=$(xidel - --extract "//$TOTAL/$PERCENT" < "$HTML")
+
+        MSG="File '$HTML' has coverage '$RAW', requires $MINIMUM"
+        echo "$MSG" 1>&2
+
+        # Remove % for comparison. 0 is denoted "-", so switch that out.
+        RESULT=$(echo "$RAW" | tr -d '%' | tr - 0)
+
+        # Check against minimum
+        [[ "$RESULT" -lt "$MINIMUM" ]] && fail "$MSG"
+      done < <(find . -name "hpc_index.html")
+
+      [[ "$FOUND" -eq 1 ]] || fail "Didn't find any coverage report"
+    '';
+  };
 };
 
-mapAttrs checkRepo myHaskell
-*/
+mapAttrs checkRepo helpers.myHaskell
