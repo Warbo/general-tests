@@ -1,14 +1,8 @@
-{
-  pkgs    ? import ../helpers/nix-config.nix {},
-  helpers ? import ../helpers/defs.nix
-}:
+{ pkgs, helpers }:
 with builtins;
-with rec {
-  inherit (pkgs)    haskell lib;
-  inherit (lib)     mapAttrs;
-  inherit (helpers) haskellStandalone myHaskell;
-};
 with pkgs;
+with lib;
+with helpers;
 wrap {
   name  = "cabal-test";
   paths = [ bash ];
