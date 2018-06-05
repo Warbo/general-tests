@@ -16,23 +16,23 @@ with {
     [ bash cabal-install2 fail findutils hsPkgs.ghc xidel  ];
     vars  = {
       inherit pkgName repo;
+      cache   = "/tmp/general-tests-cache/git-repos";
       MINIMUM = "30";  # Coverage below this % will cause a failure
     };
     script = ''
       #!/usr/bin/env bash
       set -e
 
-      D=$(mktemp -d --tmpdir 'test-hpc-coverage-$pkgName-XXXXX')
-      function cleanup {
-        rm -rf "$D" || true
+      [[ -d "$cache/$pkgName" ]] || {
+        echo "Repo '$cache/$pkgName' not found, cloning..." 1>&2
+        mkdir -p "$cache"
+        git clone "$repo" "$cache/$pkgName" ||
+          fail "Failed to clone '$repo'"
       }
-      trap cleanup EXIT
 
-      cd "$D" || fail "Couldn't cd to temp dir '$D'"
+      cd "$cache/$pkgName" || fail "Couldn't cd"
+      git pull --all || true  # Ignore network failures
 
-      cp -r "$repo" ./src
-      chmod +w -R   ./src
-      cd            ./src
       cabal new-test --enable-library-coverage || fail "Cabal failed"
 
       FOUND=0
@@ -60,4 +60,4 @@ with {
   };
 };
 
-mapAttrs checkRepo helpers.myHaskell
+mapAttrs checkRepo helpers.myHaskellRepos
