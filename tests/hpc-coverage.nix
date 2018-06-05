@@ -6,7 +6,14 @@ with lib;
 with {
   checkRepo = pkgName: repo: wrap {
     name  = "haskell-coverage-${pkgName}";
-    paths = [ bash cabal-install2 fail findutils xidel ];
+    paths = with rec {
+      # Look up an appropriate version of GHC for this package, if specified
+      hsVer  = helpers.haskellDeps."${pkgName}".ghc or null;
+      hsPkgs = if hsVer == null
+                  then haskellPackages
+                  else getAttr hsVer haskell.packages;
+    };
+    [ bash cabal-install2 fail findutils hsPkgs.ghc xidel  ];
     vars  = {
       inherit pkgName repo;
       MINIMUM = "30";  # Coverage below this % will cause a failure

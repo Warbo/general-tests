@@ -117,6 +117,8 @@ rec {
       hsPkgs        = haskellPkgs;
     };
 
+  haskellDeps = import ./haskellDeps.nix;
+
   HOME = if pathExists /home/chris
     then "/home/chris"
     else "/homeless-shelter";
