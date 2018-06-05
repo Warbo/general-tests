@@ -9,12 +9,12 @@ with lib;
 with rec {
   helpers = callPackage ./helpers {};
 
-  tests   = helpers.flattenToPaths (import ./tests { inherit helpers pkgs; });
+  tests   = import ./tests { inherit helpers pkgs; };
 
   all = wrap {
     name   = "test-runner";
     paths  = [ bash jq ];
-    vars   = { tests = attrsToDirs tests; };
+    vars   = { tests = attrsToDirs (helpers.flattenToPaths tests); };
     script = ''
       #!/usr/bin/env bash
       set -e

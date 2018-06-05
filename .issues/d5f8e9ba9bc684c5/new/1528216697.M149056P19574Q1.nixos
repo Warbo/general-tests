@@ -1,0 +1,15 @@
+From: Chris Warburton
+Date: Tue, 05 Jun 2018 17:35:15 +0100
+State: new
+Subject: Clone repos at runtime
+Message-Id: <d5f8e9ba9bc684c5-0-artemis@nixos>
+
+When a test fails, we want to be able to fix the problem and re-run the
+test; ideally without rebuilding everything. That's why we use string
+paths to shellscripts, for example, rather than paths which would cause
+them to get imported into the Nix store: the latter would make running
+the test again use the *old* version of the script.
+
+We should try to do this with git repos too: rather than using fetchgit,
+which will cause our test to run on the same version until a rebuild, we
+should do the clone at runtime.
