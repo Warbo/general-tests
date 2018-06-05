@@ -1,5 +1,5 @@
 # Use this for helper functions, etc. common to many tests
-{ bash, cabal2nix, die, fail, file, findutils, hackagePackageNames,
+{ bash, cabal2nix, callPackage, die, fail, file, findutils, hackagePackageNames,
   haskellPackages, haskellPkgWithDeps, latestGit, lib, repoSource, runCabal2nix,
   runCommand, stdenv, utillinux, withNix, wrap, writeScript }:
 
@@ -14,6 +14,8 @@ rec {
       exit 1
     '';
   };
+
+  flattenToPaths = callPackage ./flattenToPaths.nix {};
 
   getGit = url:
     assert isString url || abort (toJSON {

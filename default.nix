@@ -9,7 +9,7 @@ with lib;
 with rec {
   helpers = callPackage ./helpers {};
 
-  tests   = import ./tests { inherit helpers pkgs; };
+  tests   = helpers.flattenToPaths (import ./tests { inherit helpers pkgs; });
 
   all = wrap {
     name   = "test-runner";
