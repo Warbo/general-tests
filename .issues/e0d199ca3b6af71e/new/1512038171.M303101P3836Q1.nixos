@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Thu, 30 Nov 2017 10:13:47 +0000
-State: new
+State: resolved
 Subject: Use derivation hash to invalidate results
 Message-Id: <e0d199ca3b6af71e-0-artemis@nixos>
+resolution: fixed
 
 Since each test is a Nix derivation, they each have a hash (i.e. the
 filename of the /nix/store/*.drv file).

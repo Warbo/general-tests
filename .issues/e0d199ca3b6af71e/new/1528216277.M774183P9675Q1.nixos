@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Tue, 05 Jun 2018 17:30:58 +0100
+Subject: Re: Use derivation hash to invalidate results
+Message-Id: <e0d199ca3b6af71e-d16d7896cef7bd63-artemis@nixos>
+References: <e0d199ca3b6af71e-0-artemis@nixos>
+In-Reply-To: <e0d199ca3b6af71e-0-artemis@nixos>
+
+Over-complicated and unnecessary

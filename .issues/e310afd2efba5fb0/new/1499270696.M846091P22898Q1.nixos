@@ -1,8 +1,9 @@
 From: Chris Warburton
 Date: Wed, 05 Jul 2017 17:01:41 +0100
-State: new
+State: resolved
 Subject: New option: BEFORE
 Message-Id: <e310afd2efba5fb0-0-artemis@nixos>
+resolution: fixed
 
 Check for a new env var 'BEFORE' which lets us supply a date (seconds
 since the epoch) to limit our tests to. For example, we can run tests
