@@ -3,21 +3,28 @@
 with builtins;
 with pkgs;
 with lib;
-with {
-  checkRepo = pkgName: repo: wrap {
+with rec {
+  MINIMUM = 30;  # Coverage below this % will cause a failure
+
+  checkRepo = pkgName: repo:
+    with { cfg = helpers.haskellDeps.utils.phaseConfig pkgName "coverage"; };
+    wrap {
     name  = "haskell-coverage-${pkgName}";
-    paths = with rec {
-      # Look up an appropriate version of GHC for this package, if specified
-      hsVer  = helpers.haskellDeps."${pkgName}".ghc or null;
-      hsPkgs = if hsVer == null
-                  then haskellPackages
-                  else getAttr hsVer haskell.packages;
-    };
-    [ bash cabal-install2 fail findutils hsPkgs.ghc xidel  ];
+    paths =
+      with rec {
+        # Look up an appropriate version of GHC for this package, if specified
+        hsVer  = cfg.ghc or null;
+        hsPkgs = if cfg ? ghc
+                    then getAttr cfg.ghc haskell.packages
+                    else haskellPackages;
+      };
+      [ bash cabal-install2 fail findutils hsPkgs.ghc xidel ] ++
+      (cfg.buildInputs or []);
     vars  = {
       inherit pkgName repo;
-      cache   = "/tmp/general-tests-cache/git-repos";
-      MINIMUM = "30";  # Coverage below this % will cause a failure
+      cache    = "/tmp/general-tests-cache/git-repos";
+      extra    = helpers.haskellDeps.utils.genCabalProjectLocal cfg;
+      MINIMUM  = toString MINIMUM;
     };
     script = ''
       #!/usr/bin/env bash
@@ -28,12 +35,22 @@ with {
         mkdir -p "$cache"
         git clone "$repo" "$cache/$pkgName" ||
           fail "Failed to clone '$repo'"
+        chmod a+w -R "$cache/$pkgName"
       }
 
       cd "$cache/$pkgName" || fail "Couldn't cd"
+      rm -f cabal.project.local  # Make a clean slate
+
+      # If we have extra options like external sources, put them in place now
+      [[ -z "$extra" ]] || {
+        cp -v "$extra" cabal.project.local
+        chmod a+w -R cabal.project.local
+      }
+
       git pull --all || true  # Ignore network failures
 
-      cabal new-test --enable-library-coverage || fail "Cabal failed"
+      cabal new-test --enable-tests --enable-library-coverage ||
+        fail "Cabal failed"
 
       FOUND=0
       while read -r HTML

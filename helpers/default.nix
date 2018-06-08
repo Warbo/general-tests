@@ -118,7 +118,7 @@ rec {
       hsPkgs        = haskellPkgs;
     };
 
-  haskellDeps = import ./haskellDeps.nix;
+  haskellDeps = callPackage ./haskellDeps.nix { inherit inputFallback; };
 
   HOME = if pathExists /home/chris
     then "/home/chris"
