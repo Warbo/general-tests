@@ -55,7 +55,7 @@ with rec {
   };
 
   remote = cfg: wrap {
-    name   = "check-remote-repo-${baseNameOf (dirOf (dirOf cfg))}";
+    name   = "check-remote-repo-${sanitiseName cfg}";
     vars   = { inherit cfg; };
     script = ''
       #!/usr/bin/env bash
@@ -99,7 +99,7 @@ with rec {
   '');
 
   local = repo: wrap {
-    name   = "local-repo-${baseNameOf repo}";
+    name   = "local-repo-${sanitiseName repo}";
     vars   = { inherit getUrls repo; };
     script = ''
       #!/usr/bin/env bash
