@@ -2,20 +2,20 @@
 
 with builtins;
 with rec {
-  pkgs       = if nixpkgs == null then <nixpkgs> else nixpkgs;
-  local      = /home/chris/nix-config;
-  remote     = (import pkgs { config = {}; }).fetchgit {
+  pkgs  = if nixpkgs == null then <nixpkgs> else nixpkgs;
+  local = /home/chris/Programming/Nix/nix-config;
+  repo  = (import pkgs {}).fetchgit {
     url    = http://chriswarbo.net/git/nix-config.git;
-    rev    = "d1b2b9b";
-    sha256 = "1rsax2izq5083wlxssg0ch4bxkg2g1hm2v61vp8frg5v9q55rlgr";
+    rev    = "f5bf5f0";
+    sha256 = "1f3n5fgrqpxk3mnmpp1srrcbldasi44ymknl3y6hmrid8jigjnx0";
   };
-  config-src = if nix-config != null
-                  then nix-config
-                  else if pathExists local
-                          then local
-                          else (import remote {
-                                 unstablePath = pkgs;
-                               }).latestNixCfg;
+  withCfg    = cfg: import pkgs {
+    overlays = import "${cfg}/overlays.nix";
+  };
 };
 
-import config-src { unstablePath = pkgs; }
+if nix-config != null
+   then withCfg nix-config  # Use what we're given
+   else if pathExists local
+           then withCfg local  # Might be newer than HEAD; also works offline
+           else (withCfg repo).withLatestCfg pkgs  # Bootstrap to HEAD
