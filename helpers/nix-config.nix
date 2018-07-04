@@ -9,7 +9,7 @@ with rec {
     rev    = "f5bf5f0";
     sha256 = "1f3n5fgrqpxk3mnmpp1srrcbldasi44ymknl3y6hmrid8jigjnx0";
   };
-  withCfg    = cfg: import pkgs {
+  withCfg = cfg: import pkgs {
     overlays = import "${cfg}/overlays.nix";
   };
 };
