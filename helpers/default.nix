@@ -217,4 +217,36 @@ rec {
                                myRepos;
     };
     filterAttrs (n: _: elem n (attrNames myHaskell)) renamedRepos;
+
+  initHaskellTest = ''
+    command -v fail || {
+      echo "No 'fail' command found" 1>&2
+      exit 1
+    }
+
+    command -v git || fail "No 'git' command found"
+
+    [[ -n "$cache"   ]] || fail "No 'cache' env var found"
+    [[ -n "$pkgName" ]] || fail "No 'pkgName' env var found"
+    [[ -n "$repo"    ]] || fail "No 'repo' env var found"
+
+    [[ -d "$cache/$pkgName" ]] || {
+      echo "Repo '$cache/$pkgName' not found, cloning..." 1>&2
+      mkdir -p "$cache"
+      git clone "$repo" "$cache/$pkgName" ||
+        fail "Failed to clone '$repo'"
+      chmod a+w -R "$cache/$pkgName"
+    }
+
+    cd "$cache/$pkgName" || fail "Couldn't cd"
+    rm -f cabal.project.local  # Make a clean slate
+
+    # If we have extra options like external sources, put them in place now
+    [[ -z "$extra" ]] || {
+      cp -v "$extra" cabal.project.local
+      chmod a+w -R cabal.project.local
+    }
+
+    git pull --all || true  # Ignore network failures
+  '';
 }

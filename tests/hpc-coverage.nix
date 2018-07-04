@@ -30,24 +30,7 @@ with rec {
       #!/usr/bin/env bash
       set -e
 
-      [[ -d "$cache/$pkgName" ]] || {
-        echo "Repo '$cache/$pkgName' not found, cloning..." 1>&2
-        mkdir -p "$cache"
-        git clone "$repo" "$cache/$pkgName" ||
-          fail "Failed to clone '$repo'"
-        chmod a+w -R "$cache/$pkgName"
-      }
-
-      cd "$cache/$pkgName" || fail "Couldn't cd"
-      rm -f cabal.project.local  # Make a clean slate
-
-      # If we have extra options like external sources, put them in place now
-      [[ -z "$extra" ]] || {
-        cp -v "$extra" cabal.project.local
-        chmod a+w -R cabal.project.local
-      }
-
-      git pull --all || true  # Ignore network failures
+      ${helpers.initHaskellTest}
 
       cabal new-test --enable-tests --enable-library-coverage ||
         fail "Cabal failed"
