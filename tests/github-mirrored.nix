@@ -1,22 +1,24 @@
 { helpers, pkgs }:
-helpers.notImplemented "github-mirrored"/*
+with builtins;
 with pkgs;
-runCommand "github-mirrored" { buildInputs = [ git fail ]; } ''
-  set -e
+with lib;
+with rec {
+  dir   = "/home/chris/Programming/repos";
+  dirs  = filter (hasSuffix ".git") (attrNames (readDir dir));
+  check = entry: wrap {
+    name   = "check-${entry}-is-on-github";
+    paths  = [ git fail ];
+    vars   = { REPO = "${dir}/${entry}"; };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
 
-  # Make sure everything in ~/Programming is version controlled
-  UNMIRRORED=""
-  for REPO in /home/chris/Programming/repos/*.git
-  do
-    pushd "$REPO" > /dev/null
-    if ! git remote | grep github > /dev/null
-    then
-        UNMIRRORED="$UNMIRRORED $REPO"
-    fi
-    popd > /dev/null
-  done
-
-  [[ -z "$UNMIRRORED" ]] || fail "No GitHub mirrors for $UNMIRRORED"
-  echo pass > "$out"
-''
-*/
+      cd "$REPO" || fail "Couldn't cd to '$REPO'"
+      git remote | grep github > /dev/null ||
+        fail "No GitHub mirrors for '$REPO'"
+    '';
+  };
+};
+if pathExists dir
+   then genAttrs dirs check
+   else trace "Warning: Path '${dir}' wasn't found, no repos to check" {}
