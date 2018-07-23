@@ -1,0 +1,8 @@
+From: Chris Warburton
+Date: Mon, 23 Jul 2018 14:05:46 +0100
+Subject: Re: Tests to check git revisions in Nix files
+Message-Id: <c5a6a2457a2e4dc6-8d7a3d0deb55a63f-artemis@nixos>
+References: <c5a6a2457a2e4dc6-0-artemis@nixos>
+In-Reply-To: <c5a6a2457a2e4dc6-0-artemis@nixos>
+
+Added test

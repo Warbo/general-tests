@@ -1,0 +1,18 @@
+From: Chris Warburton
+Date: Sat, 14 Jul 2018 11:55:02 +0100
+State: resolved
+Subject: Tests to check git revisions in Nix files
+Message-Id: <c5a6a2457a2e4dc6-0-artemis@nixos>
+resolution: fixed
+
+These should include:
+
+ - nix-config using nix-helpers, warbo-packages and warbo-utilities
+ - warbo-utilities using nix-helpers and warbo-packages
+ - warbo-packages using nix-helpers
+ - general-tests using nix-helpers
+
+Grep around repos for nix-helpers, nix-config, etc.
+
+If something is often updated, we might as well bump. If it's feature
+complete don't bother.
