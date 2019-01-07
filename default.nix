@@ -14,11 +14,23 @@ with rec {
   all = wrap {
     name   = "test-runner";
     paths  = [ bash jq ];
-    vars   = { tests = attrsToDirs (helpers.flattenToPaths tests); };
+    vars   = {
+      tests         = attrsToDirs (helpers.flattenToPaths tests);
+      countFile     = "/tmp/test_results";
+      individualDir = "/tmp/test_results.individual";
+    };
     script = ''
       #!/usr/bin/env bash
       set -e
       shopt -s nullglob
+
+      # Make sure $individualDir contains only files corresponding to $tests/*
+      mkdir -p "$individualDir"
+      for F in "$individualDir"/*
+      do
+        NAME=$(basename "$F")
+        [[ -e "$tests/$NAME" ]] || rm -f "$F"
+      done
 
       COUNT=0
       SUCCESS=0
@@ -31,20 +43,20 @@ with rec {
         if "$T" 1> /dev/null 2> /dev/null
         then
           SUCCESS=$(( SUCCESS + 1 ))
-          echo "PASS"
+          echo "PASS" | tee "$individualDir/$NAME"
         else
           FAIL=$(( FAIL + 1 ))
-          echo "FAIL"
+          echo "FAIL" | tee "$individualDir/$NAME"
         fi
       done
 
       if [[ "$FAIL" -eq 0 ]]
       then
-        echo "<fc=#00FF00>$SUCCESS/$COUNT</fc>" > /tmp/test_results
+        echo "<fc=#00FF00>$SUCCESS/$COUNT</fc>" > "$countFile"
         echo "$SUCCESS/$COUNT Test suite finished successfully" 1>&2
         exit 0
       else
-        echo "<fc=#FF0000>$SUCCESS/$COUNT</fc>" > /tmp/test_results
+        echo "<fc=#FF0000>$SUCCESS/$COUNT</fc>" > "$countFile"
         echo "$SUCCESS/$COUNT Test suite encountered failures" 1>&2
         exit "$FAIL"
       fi
