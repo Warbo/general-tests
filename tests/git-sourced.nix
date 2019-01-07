@@ -9,7 +9,7 @@ with rec {
     ''
       # Find .git/config files
       function files {
-        for D in .dotfiles .emacs.d Backups Programming nix-config \
+        for D in .dotfiles .emacs.d Backups/OldCode Programming \
                  warbo-utilities Writing
         do
           [[ -e "$HOME/$D" ]] || continue
