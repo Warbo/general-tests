@@ -60,7 +60,7 @@ function keep {
 }
 
 function skipExt {
-    grep -v "\.${1}$"
+    grep -v "\\.${1}$"
 }
 
 function skip {
