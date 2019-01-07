@@ -2,27 +2,17 @@
 with pkgs;
 wrap {
   name   = "astplugin-test";
-  vars   = {};
+  paths  = [ bash fail ] ++ (withNix {}).buildInputs;
+  vars   = withNix {
+    DIR = helpers.HOME + "/Programming/Haskell/AstPlugin";
+  };
   script = ''
     #!/usr/bin/env bash
-    exit 1
+    set -e
+
+    cd "$DIR"         || fail "Failed to cd to '$DIR'"
+    [[ -e test.nix ]] || fail "No test.nix in astplugin"
+    nix-build --no-out-link --show-trace -E 'import ./test.nix' ||
+      fail "Failed to build astplugin's test.nix"
   '';
 }
-
-/*
-#!/usr/bin/env bash
-set -e
-
-function fail {
-    echo "FAIL: $1" 1>&2
-    exit 1
-}
-
-DIR=~/Programming/Haskell/AstPlugin
-cd "$DIR"
-if [[ -d "dist" ]]
-then
-    rm -r dist
-fi
-nix-build --show-trace -E 'import ./test.nix'
-*/
