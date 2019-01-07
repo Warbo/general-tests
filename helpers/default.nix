@@ -166,14 +166,21 @@ rec {
     }
     ''
       function repos {
-        for D in Programming warbo-utilities nix-config System/Tests
+        for D in warbo-utilities System/Tests
         do
           D="$HOME/$D"
           [[ -e "$D" ]] || continue
 
-          "$findIgnoringPermissions" "$D" -type d -name '.git' |
-          grep -v "/git-html/" |
-          grep -v "/ATS/aos"
+          "$findIgnoringPermissions" "$D" -type d -name '.git'
+        done
+
+        for D in "$HOME/Programming"/*
+        do
+          DIRNAME=$(basename "$D")
+          [[ "x$DIRNAME" = "xgit-html" ]] && continue
+          [[ "x$DIRNAME" = "xNotMine"  ]] && continue
+          [[ "x$DIRNAME" = "xrepos"    ]] && continue
+          "$findIgnoringPermissions" "$D" -type d -name '.git'
         done
       }
 
