@@ -8,15 +8,26 @@ with rec {
     { inherit (helpers) HOME; }
     ''
       # Find .git/config files
+      function findInDir {
+        [[ -e "$$1" ]] || continue
+        echo "Looking for git repos in $$1" 1>&2
+        "${helpers.findIgnoringPermissions}" "$$1" -type f -name config |
+          grep "/.git"
+      }
+
       function files {
         for D in .dotfiles .emacs.d Backups/OldCode Programming \
                  warbo-utilities Writing
         do
-          [[ -e "$HOME/$D" ]] || continue
-          echo "Looking for git repos in $HOME/$D" 1>&2
-          "${helpers.findIgnoringPermissions}" "$HOME/$D" -type f -name config |
-            grep    "/.git"     |
-            grep -v "/git-html"
+          findInDir "$HOME/$D"
+        done
+
+        for D in "$HOME"/Programming/*
+        do
+          NAME=$(basename "$D")
+          [[ "x$NAME" = "xgit-html" ]] && continue
+          [[ "x$NAME" = "xNotMine"  ]] && continue
+          findInDir "$D"
         done
       }
 
