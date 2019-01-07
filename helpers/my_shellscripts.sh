@@ -2,6 +2,8 @@
 
 # List as many shell scripts as possible, which are in my control to edit
 
+FINDCMD="${findIgnoringPermissions:-find}"
+
 function isSh {
     [[ "x$(ext "$1")" = "xsh" ]]
 }
@@ -62,11 +64,7 @@ function skipExt {
 }
 
 function skip {
-    grep -v -e '/git-html'           \
-            -e '/haskell-te/cache/'  \
-            -e '/NotMine/'           \
-            -e '/Programming/repos/' \
-            -e '/test-data/'         \
+    grep -v -e '/test-data/'         \
             -e '/Tests/results/'     \
             -e '/.asv'               \
             -e '/\.git'              \
@@ -94,32 +92,44 @@ function skip {
             -e '\.rkt$'              \
             -e '\.sample$'           \
             -e '\.txt$'              \
-            -e '\.v.*$'              \
-
+            -e '\.v.*$'
 }
 
 function ext {
     echo "$1" | rev | cut -d '.' -f 1 | rev | tr '[:upper:]' '[:lower:]'
 }
 
-for D in System/Tests System/Programs/bin blog warbo-utilities Programming \
-         Writing
-do
-    D="$HOME/$D"
-    if [[ -d "$D" ]]
+function scriptsIn {
+    if [[ -d "$1" ]]
     then
-        echo "Looking for shell scripts in '$D'" 1>&2
-        # shellcheck disable=SC2154
-        "$findIgnoringPermissions" "$D" -type f           \
-                                      ! -path '*.git*'    \
-                                      ! -path '*.svn*'    \
-                                      ! -path '*.issues*' | skip |
-        while read -r LINE
+        echo "Looking for shell scripts in '$1'" 1>&2
+        "$FINDCMD" "$1" -type f        \
+                   ! -path '*.git*'    \
+                   ! -path '*.svn*'    \
+                   ! -path '*.issues*' | skip | while read -r LINE
         do
             keep "$LINE" && echo "$LINE"
         done
     else
-        echo "Skipping non-existent directory '$D'" 1>&2
+        echo "Skipping non-directory '$1'" 1>&2
     fi
+}
+
+# Look everywhere in these directories
+for D in blog System/Tests System/Programs/bin warbo-utilities \
+         Writing
+do
+    scriptsIn "$HOME/$D"
 done
+
+# Skip certain directories in ~/Programming
+for D in "$HOME/Programming"/*
+do
+    NAME=$(basename "$D")
+    [[ "x$NAME" = "xgit-html" ]] && continue
+    [[ "x$NAME" = "xNotMine"  ]] && continue
+    [[ "x$NAME" = "xrepos"    ]] && continue
+    scriptsIn "$D"
+done
+
 exit 0
