@@ -6,14 +6,14 @@ with rec {
     if isDerivation x
        then x
        else if isAttrs x
-            then mapAttrs' (n: v:
-                             with { path' = path ++ [ n ]; };
-                             {
-                               name  = concatStringsSep "." path';
-                               value = nameAll path' v;
-                             })
-                           x
-            else null;
+               then mapAttrs' (n: v:
+                                with { path' = path ++ [ n ]; };
+                                {
+                                  name  = concatStringsSep "." path';
+                                  value = nameAll path' v;
+                                })
+                              x
+               else null;
 
   drvsOf = n: x:
     if x == null
