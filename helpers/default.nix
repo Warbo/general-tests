@@ -1,5 +1,5 @@
 # Use this for helper functions, etc. common to many tests
-{ bash, cabal2nix, callPackage, die, dropWhile, fail, file, findutils,
+{ bash, cabal2nix, callPackage, die, dropWhile, fail, file, findutils, git,
   hackagePackageNames, haskellPackages, haskellPkgWithDeps, latestGit, lib,
   repoSource, runCabal2nix, runCommand, stdenv, utillinux, withNix, wrap,
   writeScript }:
@@ -212,19 +212,19 @@ rec {
     echo '}' >> "$out"
   '');
 
-  myHaskellRepos =
-    with rec {
+  myReposUnhashed =
+    with {
       stripHash = s: concatStrings (tail (dropWhile (c: c != "-")
                                                     (stringToCharacters s)));
-
-      renamedRepos = mapAttrs' (name: value: {
-                                 inherit value;
-                                 name = stripHash name;
-                               })
-                               myRepos;
     };
-    filterAttrs (n: _: elem n (attrNames myHaskell)) renamedRepos;
+    mapAttrs' (name: value: {
+                inherit value;
+                name = stripHash name;
+              })
+              myRepos;
 
+  myHaskellRepos = filterAttrs (n: _: elem n (attrNames myHaskell))
+                               myReposUnhashed;
 
   cacheRepo =
     with {
