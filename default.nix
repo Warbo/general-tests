@@ -9,15 +9,40 @@ with lib;
 with rec {
   helpers = callPackage ./helpers {};
 
+  individualDir = "/tmp/test_results.individual";
+
   tests   = import ./tests { inherit helpers pkgs; };
+
+  # Flatten the test hierarchy and have each one write to its result file
+  testScripts = attrsToDirs
+    (mapAttrs (name: script: wrap {
+                name   = name + "-runner";
+                vars   = {
+                  inherit individualDir script;
+                  fileName = name;
+                };
+                script = ''
+                  #!/usr/bin/env bash
+                  mkdir -p "$individualDir"
+                  if "$script"
+                  then
+                    echo "PASS" > "$individualDir/$fileName"
+                    exit 0
+                  else
+                    echo "FAIL" > "$individualDir/$fileName"
+                    exit 1
+                  fi
+                '';
+              })
+              (helpers.flattenToPaths tests));
 
   all = wrap {
     name   = "test-runner";
     paths  = [ bash jq ];
     vars   = {
-      tests         = attrsToDirs (helpers.flattenToPaths tests);
-      countFile     = "/tmp/test_results";
-      individualDir = "/tmp/test_results.individual";
+      inherit individualDir;
+      tests     = testScripts;
+      countFile = "/tmp/test_results";
     };
     script = ''
       #!/usr/bin/env bash
@@ -43,10 +68,10 @@ with rec {
         if "$T" 1> /dev/null 2> /dev/null
         then
           SUCCESS=$(( SUCCESS + 1 ))
-          echo "PASS" | tee "$individualDir/$NAME"
+          echo "PASS"
         else
           FAIL=$(( FAIL + 1 ))
-          echo "FAIL" | tee "$individualDir/$NAME"
+          echo "FAIL"
         fi
       done
 
