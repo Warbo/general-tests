@@ -225,27 +225,37 @@ rec {
     };
     filterAttrs (n: _: elem n (attrNames myHaskell)) renamedRepos;
 
+
+  cacheRepo =
+    with {
+      cache   = "/tmp/general-tests-cache/git-repos";
+      failCmd = "${fail}/bin/fail";
+    };
+    ''
+      # Create a '${cache}/$pkgName' directory by cloning '$repo', then 'pushd'
+      # into it. We hard-code the binaries we use so we're more self-contained.
+
+      set -e
+      [[ -n "$pkgName" ]] || "${failCmd}" "No 'pkgName' env var found"
+      [[ -n "$repo"    ]] || "${failCmd}" "No 'repo' env var found"
+
+      [[ -d "${cache}/$pkgName" ]] || {
+        echo "Repo '${cache}/$pkgName' not found, cloning..." 1>&2
+        mkdir -p "${cache}"
+        "${git}/bin/git" clone "$repo" "${cache}/$pkgName" ||
+          "${failCmd}" "Failed to clone '$repo'"
+        chmod a+w -R "${cache}/$pkgName"
+      }
+
+      pushd "${cache}/$pkgName" ||
+        "${failCmd}" "Couldn't cd to '${cache}/$pkgName'"
+
+      git pull --all || true  # Ignore network failures
+    '';
+
   initHaskellTest = ''
-    command -v fail || {
-      echo "No 'fail' command found" 1>&2
-      exit 1
-    }
+    ${cacheRepo}
 
-    command -v git || fail "No 'git' command found"
-
-    [[ -n "$cache"   ]] || fail "No 'cache' env var found"
-    [[ -n "$pkgName" ]] || fail "No 'pkgName' env var found"
-    [[ -n "$repo"    ]] || fail "No 'repo' env var found"
-
-    [[ -d "$cache/$pkgName" ]] || {
-      echo "Repo '$cache/$pkgName' not found, cloning..." 1>&2
-      mkdir -p "$cache"
-      git clone "$repo" "$cache/$pkgName" ||
-        fail "Failed to clone '$repo'"
-      chmod a+w -R "$cache/$pkgName"
-    }
-
-    cd "$cache/$pkgName" || fail "Couldn't cd"
     rm -f cabal.project.local  # Make a clean slate
 
     # If we have extra options like external sources, put them in place now
@@ -253,7 +263,5 @@ rec {
       cp -v "$extra" cabal.project.local
       chmod a+w -R cabal.project.local
     }
-
-    git pull --all || true  # Ignore network failures
   '';
 }
