@@ -22,9 +22,8 @@ with rec {
       (cfg.buildInputs or []);
     vars  = {
       inherit pkgName repo;
-      cache    = "/tmp/general-tests-cache/git-repos";
-      extra    = helpers.haskellDeps.utils.genCabalProjectLocal cfg;
-      MINIMUM  = toString MINIMUM;
+      extra   = helpers.haskellDeps.utils.genCabalProjectLocal cfg;
+      MINIMUM = toString MINIMUM;
     };
     script = ''
       #!/usr/bin/env bash
