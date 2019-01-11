@@ -1,13 +1,20 @@
 { helpers, pkgs }:
-helpers.notImplemented "warbo-utilities-test"/*
+
 with pkgs;
-runCommand "warbo-utilities"
-  (withNix {
+with {
+  env = withNix {
     utils = latestGit { url = helpers.repoOf "warbo-utilities"; };
-  })
-  ''
+  };
+};
+wrap {
+  name   = "warbo-utilities-test";
+  paths  = env.buildInputs;
+  vars   = env;
+  script = ''
+    #!/usr/bin/env bash
+    set -e
     cd "$utils"
-    ./test.sh
-    echo "pass" > "$out"
-  ''
-*/
+    ./check.sh
+    nix-build --no-out-link
+  '';
+}
