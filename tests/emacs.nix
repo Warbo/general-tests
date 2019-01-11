@@ -1,16 +1,24 @@
 { helpers, pkgs }:
-helpers.notImplemented "emacs"/*
 with pkgs;
-runCommand "emacs"
-  {
-    CFG         = latestGit { url = helpers.repoOf "warbo-emacs-d"; };
-    buildInputs = [ aspell aspellDicts.en emacs ];
-  }
-  ''
-    export HOME="$PWD/home"
-    mkdir "$HOME"
-    cp -r "$CFG" "$HOME/.emacs.d"
-    chmod +w -R "$HOME/.emacs.d"
-    "$HOME/.emacs.d/test-runner.sh"
-  ''
-*/
+wrap {
+  name  = "emacs";
+  paths = [ aspell aspellDicts.en emacs ];
+  vars  = { cfg = latestGit { url = helpers.repoOf "warbo-emacs-d"; }; };
+  script = ''
+    #!/usr/bin/env bash
+    set -e
+
+    # Work in a temp dir for reliability and to avoid polluting real home dirs
+    D=$(mktemp --tmpdir -d 'general-tests-emacs-XXXXX')
+
+    function cleanup {
+      # We use the innocuous name D, since deleting $HOME could go badly wrong!
+      rm -rf "$D"
+    }
+    trap cleanup EXIT
+
+    cp -r "$cfg" "$D/.emacs.d"
+    chmod +w -R "$D/.emacs.d"
+    HOME="$D" "$D/.emacs.d/test-runner.sh"
+  '';
+}
