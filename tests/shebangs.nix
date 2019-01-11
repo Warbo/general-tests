@@ -31,13 +31,20 @@ with rec {
     '';
   };
 
-  checkScripts = dir: runCommand "check" { inherit checkShebang dir; } ''
-    while read -r script
-    do
-      "$checkShebang" "$script"
-    done < <(find "$dir" -name "*.sh")
-    echo "Pass" > "$out"
-  '';
+  checkScripts = dir: wrap {
+    name   = "check";
+    paths  = [ bash ];
+    vars   = { inherit checkShebang dir; };
+    script = ''
+      #!/usr/bin/env bash
+      set -e
+      while read -r script
+      do
+        "$checkShebang" "$script" || exit 1
+      done < <(find "$dir" -name "*.sh")
+      exit 0
+    '';
+  };
 };
 {
   tests = checkScripts (latestGit {
