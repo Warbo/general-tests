@@ -12,7 +12,7 @@ wrap {
 
     cd "$DIR"         || fail "Failed to cd to '$DIR'"
     [[ -e test.nix ]] || fail "No test.nix in astplugin"
-    nix-build --no-out-link --show-trace -E 'import ./test.nix' ||
+    nix-build --no-out-link --show-trace test.nix ||
       fail "Failed to build astplugin's test.nix"
   '';
 }
