@@ -15,16 +15,22 @@ for running hlint on a different Haskell project.
 
 ## Running ##
 
-The top-level `default.nix` file defines a script which runs all of these tests,
-counts passes/fails and writes output to `/tmp` suitable for embedding in
-`xmobar`. To build this wrapper script, just run `nix-build` in the top-level
-directory: the path to the resulting script will be printed on stdout, and a
-symlink called `result` will also point to it. Running that script will invoke
-the whole test suite.
+The top-level `default.nix` file defines a script which runs all of these tests
+and counts passes/fails. Each test script is wrapped in a script which writes
+either `PASS` or `FAIL` to an appropriately named file in `/tmp`, so we can find
+out which tests have failed, etc. The main runner will delete any of these files
+which don't correspond to a known test.
+
+To build the main runner, and hence all of the tests scripts and their wrappers,
+just run `nix-build` in the top-level directory: the path to the runner script
+will be printed on stdout, and a symlink called `result` will also point to it.
+Running that script will invoke the whole test suite. If you want to run an
+individual test (via its wrapper), look for the `tests` variable in the main
+runner script: that's where all of the individual tests can be found.
 
 The advantage to this two step build-then-run approach is that we can have the
 build step perform some time-consuming tasks, like using `find` to look for
-shell scripts, git repos, etc. and generate test scripts based on the results.
+shell scripts, git repos, etc. and generate test scripts based on what's found.
 Once they're built, we can run those scripts again and again without having to
 perform the slow tasks again. When we want to "flush the cache" we just run
 `nix-build` to generate new scripts.
