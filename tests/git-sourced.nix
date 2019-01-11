@@ -9,15 +9,14 @@ with rec {
     ''
       # Find .git/config files
       function findInDir {
-        [[ -e "$$1" ]] || continue
-        echo "Looking for git repos in $$1" 1>&2
-        "${helpers.findIgnoringPermissions}" "$$1" -type f -name config |
+        [[ -e "$1" ]] || return
+        echo "Looking for git repos in $1" 1>&2
+        "${helpers.findIgnoringPermissions}" "$1" -type f -name config |
           grep "/.git"
       }
 
       function files {
-        for D in .dotfiles .emacs.d Backups/OldCode Programming \
-                 warbo-utilities Writing
+        for D in .dotfiles .emacs.d Backups/OldCode warbo-utilities Writing
         do
           findInDir "$HOME/$D"
         done
@@ -25,9 +24,8 @@ with rec {
         for D in "$HOME"/Programming/*
         do
           NAME=$(basename "$D")
-          [[ "x$NAME" = "xgit-html" ]] && continue
-          [[ "x$NAME" = "xNotMine"  ]] && continue
-          findInDir "$D"
+          [[ "x$NAME" = "xgit-html" ]] ||
+          [[ "x$NAME" = "xNotMine"  ]] || findInDir "$D"
         done
       }
 
@@ -39,35 +37,29 @@ with rec {
       echo ']' >> "$out"
     '');
 
-  getUrls = wrap {
-    name   = "getUrls";
-    paths  = [ bash ];
-    vars   = {
+  repoUrls = runCommand "git-repo-urls.tsv"
+    {
       configs = writeScript "repo-configs.txt"
                             (concatStringsSep "\n" repoConfigs);
-    };
-    script = ''
-      #!/usr/bin/env bash
-      set -e
-
+    }
+    ''
       # Find URLs mentioned in a .git/config file
-      ${concatStringsSep "\n"
-          (map (cfg: ''
-                 if [[ -e "${cfg}" ]]
-                 then
-                   while read -r REMOTE
-                   do
-                     echo "${cfg}	$REMOTE"
-                   done < <(grep "^\s*url\s*=" < "${cfg}")
-                 fi
-               '')
-               repoConfigs)}
+      touch "$out"
+      while read -r CFG
+      do
+        if [[ -e "$CFG" ]]
+        then
+          while read -r REMOTE
+          do
+            echo "$CFG	$REMOTE" >> "$out"
+          done < <(grep "^\s*url\s*=" < "$CFG")
+        fi
+      done < "$configs"
     '';
-  };
 
   remote = cfg: wrap {
     name   = "check-remote-repo-${sanitiseName cfg}";
-    vars   = { inherit cfg; };
+    vars   = { inherit cfg repoUrls; };
     script = ''
       #!/usr/bin/env bash
       set -e
@@ -96,7 +88,7 @@ with rec {
             exit 1
           }
         fi
-      done < <("${getUrls}")
+      done < "$repoUrls"
     '';
   };
 
@@ -111,19 +103,19 @@ with rec {
 
   local = repo: wrap {
     name   = "local-repo-${sanitiseName repo}";
-    vars   = { inherit getUrls repo; };
+    vars   = { inherit repo repoUrls; };
     script = ''
       #!/usr/bin/env bash
 
       # Check that $repo is a remote of some local repo
-      shopt -s nullglob
-      URLS=$("$getUrls")
-
       echo "Looking for a source of '$repo'"
-      echo "$URLS" | cut -f 2 | grep "$repo" > /dev/null || {
-        echo "No source found for '$repo'" 1>&2
-        exit 1
-      }
+      if cut -f 2 < "$repoUrls" | grep "$repo" > /dev/null
+      then
+        exit 0
+      fi
+
+      echo "No source found for '$repo'" 1>&2
+      exit 1
     '';
   };
 };
