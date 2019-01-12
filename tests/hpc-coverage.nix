@@ -6,21 +6,26 @@ with lib;
 with rec {
   MINIMUM = 30;  # Coverage below this % will cause a failure
 
+  env = withNix {};
+
   checkRepo = pkgName: repo:
     with { cfg = helpers.haskellDeps.utils.phaseConfig pkgName "coverage"; };
     wrap {
-    name  = "haskell-coverage-${pkgName}";
-    paths =
-      with rec {
-        # Look up an appropriate version of GHC for this package, if specified
-        hsVer  = cfg.ghc or null;
-        hsPkgs = if cfg ? ghc
-                    then getAttr cfg.ghc haskell.packages
-                    else haskellPackages;
-      };
-      [ bash cabal-install2 fail findutils hsPkgs.ghc xidel ] ++
-      (cfg.buildInputs or []);
-    vars  = {
+      name  = "haskell-coverage-${pkgName}";
+      paths =
+        with rec {
+          # Look up an appropriate version of GHC for this package, if specified
+          hsVer  = cfg.ghc or null;
+          hsPkgs = if cfg ? ghc
+                      then getAttr cfg.ghc haskell.packages
+                      else haskellPackages;
+        };
+        concatLists [
+          [ bash cabal-install2 fail findutils hsPkgs.ghc xidel ]
+          (cfg.buildInputs or [])
+          env.buildInputs
+        ];
+    vars  = env // {
       inherit pkgName repo;
       extra   = helpers.haskellDeps.utils.genCabalProjectLocal cfg;
       MINIMUM = toString MINIMUM;
@@ -31,8 +36,15 @@ with rec {
 
       ${helpers.initHaskellTest}
 
-      cabal new-test --enable-tests --enable-library-coverage ||
-        fail "Cabal failed"
+      if [[ -e shell.nix ]]
+      then
+        nix-shell --run \
+          'cabal new-test --enable-tests --enable-library-coverage' ||
+          fail "Cabal failed"
+      else
+        cabal new-test --enable-tests --enable-library-coverage ||
+          fail "Cabal failed"
+      fi
 
       FOUND=0
       while read -r HTML
