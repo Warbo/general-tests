@@ -171,7 +171,8 @@ rec {
           D="$HOME/$D"
           [[ -e "$D" ]] || continue
 
-          "$findIgnoringPermissions" "$D" -type d -name '.git'
+          "$findIgnoringPermissions" "$D" -type d -name '.git' |
+            grep -v '/\.asv/'
         done
 
         for D in "$HOME/Programming"/*
@@ -180,7 +181,8 @@ rec {
           [[ "x$DIRNAME" = "xgit-html" ]] && continue
           [[ "x$DIRNAME" = "xNotMine"  ]] && continue
           [[ "x$DIRNAME" = "xrepos"    ]] && continue
-          "$findIgnoringPermissions" "$D" -type d -name '.git'
+          "$findIgnoringPermissions" "$D" -type d -name '.git' |
+            grep -v '/\.asv/'
         done
       }
 
