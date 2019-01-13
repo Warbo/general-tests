@@ -12,11 +12,13 @@ with rec {
         [[ -e "$1" ]] || return
         echo "Looking for git repos in $1" 1>&2
         "${helpers.findIgnoringPermissions}" "$1" -type f -name config |
-          grep "/.git"
+          grep -v '/\.asv/' |
+          grep    '/\.git/' || true
       }
 
       function files {
-        for D in .dotfiles .emacs.d Backups/OldCode warbo-utilities Writing
+        for D in .dotfiles .emacs.d Backups/OldCode blog System/Tests \
+                 warbo-utilities Writing
         do
           findInDir "$HOME/$D"
         done
@@ -26,6 +28,11 @@ with rec {
           NAME=$(basename "$D")
           [[ "x$NAME" = "xgit-html" ]] ||
           [[ "x$NAME" = "xNotMine"  ]] || findInDir "$D"
+        done
+
+        for F in "$HOME"/Programming/NotMine/*/.git/config
+        do
+          echo "$F"
         done
       }
 
@@ -52,7 +59,7 @@ with rec {
           while read -r REMOTE
           do
             echo "$CFG	$REMOTE" >> "$out"
-          done < <(grep "^\s*url\s*=" < "$CFG")
+          done < <(grep "^\s*url\s*=" < "$CFG" || true)
         fi
       done < "$configs"
     '';
