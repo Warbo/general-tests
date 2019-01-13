@@ -258,7 +258,9 @@ rec {
   initHaskellTest = ''
     ${cacheRepo}
 
-    rm -f cabal.project.local  # Make a clean slate
+    # Make a clean slate
+    rm -rf dist dist-newstyle
+    rm -f cabal.project.local
 
     # If we have extra options like external sources, put them in place now
     [[ -z "$extra" ]] || {
