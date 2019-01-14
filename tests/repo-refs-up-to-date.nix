@@ -7,9 +7,9 @@ with pkgs;
 with pkgs.lib;
 with {
   refs = {
-    nix-helpers     = [ "nix-config" "warbo-utilities" "warbo-packages" ];
-    warbo-packages  = [ "nix-config" "warbo-utilities"                  ];
-    warbo-utilities = [ "nix-config"                                    ];
+    nix-helpers     = [ "warbo-packages"  ];
+    warbo-packages  = [ "warbo-utilities" ];
+    warbo-utilities = [ "nix-config"      ];
   };
 
   check = repo: refs: genAttrs refs (ref: wrap {
