@@ -66,20 +66,23 @@ wrap {
 
     echo "Trying bibclean"
 
-    RAWBIB=$(bibclean -output-file /dev/null 2>&1 < $BIB") || {
+    RAWBIB=$(bibclean -output-file /dev/null 2>&1 < "$BIB") || {
       echo "bibclean exited with code '$?'" 1>&2
       echo "RAWBIB: $RAWBIB" 1>&2
       exit 1
     }
 
     # Remove stuff we don't care about; if there's anything remaining, fail
-    KEEP=$(echo "$RAWBIB"                         |
-           grep "[^ ]"                            |
-           grep -v "ISBN"                         |
-           grep -v "http://dx.doi.org"            |
-           grep -v "Unexpected value in ..pages"  |
-           grep -v "Unexpected value in ..volume" |
-           grep -v "Unexpected value in ..month")
+    KEEP=$(echo "$RAWBIB"                                                |
+           grep "[^ ]"                                                   |
+           grep -v "ISBN"                                                |
+           grep -v "http://dx.doi.org"                                   |
+           grep -v "Unexpected value in ..pages"                         |
+           grep -v "Unexpected value in ..volume"                        |
+           grep -v "Unexpected value in ..month"                         |
+           grep -v "Unexpected protocol://.*https://"                    |
+           grep -v 'Unexpected value in ..year = "[0-9][0-9][0-9][0-9]"' |
+           grep -v 'Suspicious year in ..year = "[0-9][0-9][0-9][0-9]"'  )
 
     if [[ -z "$KEEP" ]]
     then
