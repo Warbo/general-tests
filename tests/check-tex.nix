@@ -2,7 +2,7 @@
 with pkgs;
 wrap {
   name  = "check-tex";
-  paths = [ bash bibclean bibtool ];
+  paths = [ bash bibclean bibtool (texlive.combined.scheme-basic) ];
   vars  = {
     BIB = "/home/chris/Writing/Bibtex.bib";
     DIR = "/home/chris/Documents/ArchivedPapers";
