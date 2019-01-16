@@ -82,7 +82,8 @@ wrap {
            grep -v "Unexpected value in ..month"                         |
            grep -v "Unexpected protocol://.*https://"                    |
            grep -v 'Unexpected value in ..year = "[0-9][0-9][0-9][0-9]"' |
-           grep -v 'Suspicious year in ..year = "[0-9][0-9][0-9][0-9]"'  )
+           grep -v 'Suspicious year in ..year = "[0-9][0-9][0-9][0-9]"'  |
+           grep -v '``year = "[0-9]* B.C.E"') || true
 
     if [[ -z "$KEEP" ]]
     then
