@@ -120,7 +120,9 @@ rec {
 
   haskellDeps = callPackage ./haskellDeps.nix { inherit inputFallback; };
 
-  HOME = if pathExists /home/chris
+  onChrisLaptop = pathExists /home/chris;
+
+  HOME = if onChrisLaptop
     then "/home/chris"
     else "/homeless-shelter";
 
