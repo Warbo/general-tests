@@ -1,25 +1,25 @@
 { helpers, pkgs }:
-helpers.notImplemented "reduce-equations"/*
 with pkgs;
-with rec {
-  repo = helpers.inputFallback "reduce-equations";
-  re   = runCabal2nix { url = "${repo}"; };
-};
-runCommand "reduce-equations"
-  {
-    inherit repo;
-    buildInputs = [ fail jq re ];
-  }
-  ''
+wrap {
+  name   = "reduce-equations";
+  paths  = [ bash fail ] ++ (withNix {}).buildInputs;
+  vars   = withNix {
+    dir = helpers.inputFallback "reduce-equations";
+  };
+  script = ''
+    #!/usr/bin/env bash
     set -e
-    set -o pipefail
+    D=$(mktemp -d --tmpdir general-tests-reduce-equations-XXXXX)
 
-    for F in "$repo"/test/data/*.json
-    do
-      reduce-equations < "$F" | jq -es '. | length | . > 0' ||
-        fail "No eqs for $F"
-    done
+    function cleanup {
+      rm -rf "$D"
+    }
+    trap cleanup EXIT
 
-    echo pass > "$out"
-  ''
-*/
+    cd "$D" || fail "Couldn't cd to '$D'"
+    cp -r "$dir" ./src
+    chmod +w -R  ./src
+    cd ./src || exit 1
+    nix-shell --run './test.sh' || fail "test.sh failed"
+  '';
+}
