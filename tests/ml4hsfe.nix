@@ -1,24 +1,27 @@
 { helpers, pkgs }:
 with builtins;
 with pkgs;
-with { src = helpers.inputFallback "ml4hs"; };
+with { src = helpers.inputFallback "ml4hsfe"; };
+with nixListToBashArray {
+  name = "ATTRNAMES";
+  args = attrNames (removeAttrs (import "${src}/overlayed.nix").ml4hsfeTests
+                                [ "override" "overrideDerivation" ]);
+};
 wrap {
   name   = "ml4hs-tests";
   paths  = (withNix {}).buildInputs ++ [ bash fail ];
-  vars   = withNix {
-    inherit src;
-    names = nixListToBashArray {
-      name = "ATTRNAMES";
-      args = attrNames (import "${src}/overlayed.nix").ml4hsfeTests;
-    };
-  };
+  vars   = withNix (env // { inherit src; });
   script = ''
     #!/usr/bin/env bash
     set -e
-    for NAME in "$names[@]"
+
+    ${code}
+
+    for NAME in "''${ATTRNAMES[@]}"
     do
       nix-build --no-out-link --show-trace \
-        -E "(import \"$src\").ml4hsfeTests.$NAME" || fail "Couldn't build $NAME"
+        -E "(import \"$src/overlayed.nix\").ml4hsfeTests.$NAME" ||
+          fail "Couldn't build $NAME"
     done
     echo "All passed" 1>&2
     exit 0
