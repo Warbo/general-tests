@@ -44,5 +44,5 @@ with rec {
   };
 };
 mapAttrs check {
-  inherit (helpers.myReposUnhashed) panpipe;
+  inherit (helpers.myReposUnhashed) haskell-te panpipe;
 }
