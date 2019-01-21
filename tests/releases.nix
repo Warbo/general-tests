@@ -17,7 +17,7 @@ with rec {
     vars   = env // {
       inherit pkgName repo;
       ATTRS = ''
-        (with import ${nix-helpers}; drvPathsIn (import (./. + "/release.nix")))
+        (with import ${nix-helpers}; drvPathsIn (import ./release.nix))
        '';
     };
     script = ''
